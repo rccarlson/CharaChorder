@@ -41,6 +41,10 @@ public class CharaChorder : IDisposable
 
 	public void Dispose()
 	{
-		_port?.Dispose();
+		if(_port is not null)
+		{
+			if(_port.IsOpen) _port.Close();
+			_port.Dispose();
+		}
 	}
 }
