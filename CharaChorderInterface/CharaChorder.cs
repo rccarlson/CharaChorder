@@ -1,5 +1,4 @@
 ﻿using System.IO.Ports;
-using System.Management;
 
 namespace CharaChorder;
 
