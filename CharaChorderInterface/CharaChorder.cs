@@ -17,7 +17,7 @@ public class CharaChorder : IDisposable
 	private CharaChorder() { }
 
 	/// <summary>
-	/// Build a <see cref="CharaChorder"/> from 
+	/// Build a <see cref="CharaChorder"/> from a serial port
 	/// </summary>
 	/// <param name="serialPortName"></param>
 	/// <returns></returns>
