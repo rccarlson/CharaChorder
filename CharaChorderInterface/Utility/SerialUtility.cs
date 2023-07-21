@@ -17,9 +17,9 @@ internal class SerialUtility
 
 	public struct DeviceInfo
 	{
-		public string name;
-		public string description;
-		public string bus_description;
+		public string? name;
+		public string? description;
+		public string? bus_description;
 	}
 
 	static DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc = new DEVPROPKEY()
@@ -112,7 +112,7 @@ internal class SerialUtility
 		return Encoding.Unicode.GetString(ptrBuf, 0, (int)RequiredSize - utf16terminatorSize_bytes);
 	}
 
-	private static string GetDeviceBusDescription(IntPtr hDeviceInfoSet, SP_DEVINFO_DATA deviceInfoData)
+	private static string? GetDeviceBusDescription(IntPtr hDeviceInfoSet, SP_DEVINFO_DATA deviceInfoData)
 	{
 		byte[] ptrBuf = new byte[BUFFER_SIZE];
 		uint propRegDataType;
