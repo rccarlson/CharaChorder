@@ -81,6 +81,31 @@ public class CharaChorder : IDisposable
 		};
 	}
 
+	public Version GetVersion()
+	{
+		const int ErrValue = 0;
+
+		var result = Query("VERSION");
+		var resultComponents = result?.Split(" ");
+		var versionComponents = resultComponents?[1].Split(".");
+		var version = new Version(
+			major: tryParseInt(versionComponents?[0]),
+			minor: tryParseInt(versionComponents?[1]),
+			build: tryParseInt(versionComponents?[2])
+			);
+		return version;
+
+		static int tryParseInt(string? str)
+		{
+			if (str is null)
+				return ErrValue;
+			else if(int.TryParse(str, out var value) )
+				return value;
+			else
+				return ErrValue;
+		}
+	}
+
 	private string? Query(string query)
 	{
 		Log($"Sending: '{query}'");
