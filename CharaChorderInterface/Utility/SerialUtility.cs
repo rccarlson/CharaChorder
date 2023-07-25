@@ -1,6 +1,6 @@
 ﻿// This file is based on https://stackoverflow.com/a/36616242/11069086 with some modifications
 
-namespace CharaChorder.Utility;
+namespace CharaChorderInterface.Utility;
 
 using System;
 using System.Text;

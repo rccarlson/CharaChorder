@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CharaChorder.Structs;
+namespace CharaChorderInterface.Structs;
 
-public record struct DeviceID(string? Company, string? Device, string? Chipset);
+public readonly record struct DeviceID(string? Company, string? Device, string? Chipset);
+
+public readonly record struct Chordmap(int Index, long Chord, CCActionCodes[] ActionCodes);
+
+public readonly record struct CCActionCodes(long ActionCode);
