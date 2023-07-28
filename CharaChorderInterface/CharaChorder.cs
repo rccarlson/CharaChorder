@@ -1,6 +1,9 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.Diagnostics;
+using System.IO.Ports;
 using System.Text;
 using System.Text.Unicode;
+using CharaChorder.Utility;
 using CharaChorderInterface.Structs;
 
 namespace CharaChorderInterface;
@@ -10,6 +13,7 @@ public class CharaChorder : IDisposable
 	const int BaudRate = 115_200;
 	static readonly int[] VendorIDs = new int[] { 0x239A, 0x303A };
 	public Action<string> Log = Console.WriteLine;
+	private object _serialLock = new object();
 
 	#region CONSTRUCTION
 	private SerialPort? _port = null;
@@ -128,25 +132,217 @@ public class CharaChorder : IDisposable
 		var split = response?.Split(" ");
 		var chord = split?[2];
 		var phrase = split?[3];
+		if (split?.Length != 5) return null; // occurs if chord not found
 		var ok = split?[4];
 		if (ok != "0") return null;
 		if (chord is null || phrase is null) throw new InvalidDataException($"Null chord or phrase");
 		return Chordmap.FromHex(chord, phrase);
 	}
 
-	#endregion CHORD MANAGEMENT
-
-	private string? Query(string query)
+	public void SetChordmap(Chordmap chord)
 	{
-		if (_port is null || !_port.IsOpen)
-			throw new InvalidOperationException("Cannot execute query: No connection established");
-		Log($"Sending: '{query}'");
-		var bytes = UTF8Encoding.UTF8.GetBytes(query + "\r\n");
-		_port?.Write(bytes, 0, bytes.Length);
-		var result = _port?.ReadTo("\r\n");
-		return result;
+		var response = Query($"CML C3 {chord.HexChord} {chord.HexPhrase}");
+		var split = response?.Split(" ");
+		var ok = split?[4];
+		if (ok != "0") throw new InvalidDataException($"Chord creation failed. Code: {ok}");
 	}
 
+	public void DeleteChordmap(Chordmap chord)
+	{
+		var response = Query($"CML C4 {chord.HexChord}");
+		var split = response?.Split(" ");
+		var ok = split?[3];
+		if (ok != "0") throw new InvalidDataException($"Chord deletion failed. Code: {ok}");
+	}
+
+	#endregion CHORD MANAGEMENT
+
+	#region RESET
+	public void Reset(ResetType resetType)
+	{
+		var subcommand = resetType switch
+		{
+			ResetType.Restart => "RESTART",
+			ResetType.Factory => "FACTORY",
+			ResetType.Bootloader => "BOOTLOADER",
+			ResetType.Params => "PARAMS",
+			ResetType.Keymaps => "KEYMAPS",
+			ResetType.Starter => "STARTER",
+			ResetType.ClearCml => "CLEARCML",
+			ResetType.UpgradeCml => "UPGRADECML",
+			ResetType.Func => "FUNC",
+			_ => throw new NotImplementedException(resetType.ToString())
+		};
+		Send($"RST {subcommand}");
+	}
+	#endregion RESET
+
+	#region PARAMETERS
+	/// <summary>
+	/// Prefixes output with a number code so you can figure out what type of value you read from serial - gekko
+	/// </summary>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialHeader { get => GetBoolParameter("1"); set => SetBoolParameter("1", value); }
+	/// <summary>
+	/// Dumps information when user interacts with device. Can be used to find what a user is doing when trying to create chords
+	/// </summary>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialLogging { get => GetBoolParameter("2"); set => SetBoolParameter("2", value); }
+	/// <summary>
+	/// Dumps information when user interacts with device. Can be used to find what a user is doing when trying to create chords
+	/// </summary>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialDebugging { get => GetBoolParameter("3"); set => SetBoolParameter("3", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialRaw { get => GetBoolParameter("4"); set => SetBoolParameter("4", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialChord { get => GetBoolParameter("5"); set => SetBoolParameter("5", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialKeyboard { get => GetBoolParameter("6"); set => SetBoolParameter("6", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialMouse { get => GetBoolParameter("7"); set => SetBoolParameter("7", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableUsbHidKeyboard { get => GetBoolParameter("11"); set => SetBoolParameter("11", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableCharacterEntry { get => GetBoolParameter("12"); set => SetBoolParameter("12", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool GUI_CTRLSwapMode { get => GetBoolParameter("13"); set => SetBoolParameter("13", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int KeyScanDuration { get => GetIntParameter("14"); set => SetIntParameter("14", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int KeyDebouncePressDuration { get => GetIntParameter("15"); set => SetIntParameter("15", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int KeyDebounceReleaseDuration { get => GetIntParameter("16"); set => SetIntParameter("16", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int KeyboardOutputCharacterMicrosecondDelays { get => GetIntParameter("17"); set => SetIntParameter("17", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableUsbHidMouse { get => GetBoolParameter("21"); set => SetBoolParameter("21", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int SlowMouseSpeed { get => GetIntParameter("22"); set => SetIntParameter("22", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int FastMouseSpeed { get => GetIntParameter("23"); set => SetIntParameter("23", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableActiveMouse { get => GetBoolParameter("24"); set => SetBoolParameter("24", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int MouseScrollSpeed { get => GetIntParameter("25"); set => SetIntParameter("25", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int MousePollDuration { get => GetIntParameter("26"); set => SetIntParameter("26", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableChording { get => GetBoolParameter("31"); set => SetBoolParameter("31", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableChordingCharacterCounterTimeout { get => GetBoolParameter("32"); set => SetBoolParameter("32", value); }
+	/// <summary> in deciseconds </summary>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int ChordingCharacterCounterTimeoutTimer { get => GetIntParameter("33"); set => SetIntParameter("33", value, 0, 255); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int ChordDetectionPressTolerance { get => GetIntParameter("34"); set => SetIntParameter("34", value, 1, 50); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int ChordDetectionReleaseTolerance { get => GetIntParameter("35"); set => SetIntParameter("35", value, 1, 50); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSpurring { get => GetBoolParameter("41"); set => SetBoolParameter("41", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSpurringCharacterCounterTimeout { get => GetBoolParameter("42"); set => SetBoolParameter("42", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int SpurringCharacterCounterTimeoutTimer { get => GetIntParameter("43"); set => SetIntParameter("43", value, 0, 255); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableArpeggiates { get => GetBoolParameter("51"); set => SetBoolParameter("51", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int ArpeggiateTolerance { get => GetIntParameter("54"); set => SetIntParameter("54", value); }
+	//[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableCompoundChording { get => GetBoolParameter("61"); set => SetBoolParameter("61", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int CompoundTolerance { get => GetIntParameter("64"); set => SetIntParameter("64", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int LEDBrightness { get => GetIntParameter("81"); set => SetIntParameter("81", value, 0, 50); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int LEDColorCode { get => throw new NotImplementedException("82"); set => throw new NotImplementedException("82"); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableLEDKeyHighlight { get => GetBoolParameter("83"); set => SetBoolParameter("83", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public OperatingSystem OperatingSystem {
+		get
+		{
+			var osStr = GetParameter("91");
+			if (!int.TryParse(osStr, out int osInt)) return OperatingSystem.Unknown;
+			return (OperatingSystem)osInt;
+		}
+		set => SetParameter("91", ((int)value).ToString());
+	}
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableRealtimeFeedback { get => GetBoolParameter("92"); set => SetBoolParameter("92", value); }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableCharaChorderReadyOnStartup { get => GetBoolParameter("93"); set => SetBoolParameter("93", value); }
+
+
+	private int GetIntParameter(string parameterName) => int.Parse(GetParameter(parameterName));
+	private void SetIntParameter(string parameterName, int value) => SetParameter(parameterName, value.ToString());
+	private void SetIntParameter(string parameterName, int value, int min, int max) => SetParameter(parameterName, value.Clamp(min, max).ToString());
+	private bool GetBoolParameter(string parameterName) { 
+		var response = GetParameter(parameterName);
+		return response switch
+		{
+			"0" => false,
+			"1" => true,
+			_ => throw new NotImplementedException(response),
+		};
+	}
+	private void SetBoolParameter(string parameterName, bool value)
+	{
+		var valueStr = value switch
+		{
+			true => "1",
+			false => "0",
+		};
+		SetParameter(parameterName, valueStr);
+	}
+
+	private string GetParameter(string parameterCode)
+	{
+		var response = Query($"VAR B1 {parameterCode}");
+		var split = response?.Split(" ");
+		var dataOut = split?[3];
+		var ok = split?[4];
+		if (ok != "0") throw new InvalidDataException($"Failed to query parameter {parameterCode}. Exception code: {ok}");
+		return dataOut ?? string.Empty;
+	}
+	private void SetParameter(string parameterCode, string dataIn)
+	{
+		var response = Query($"VAR B2 {parameterCode} {dataIn}");
+		var split = response?.Split(" ");
+		var dataOut = split?[3];
+		var ok = split?[4];
+		if (ok != "0") throw new InvalidDataException($"Failed to query parameter {parameterCode}. Exception code: {ok}");
+	}
+
+	public void Commit()
+	{
+		var response = Query("VAR B0");
+		var split = response?.Split(" ");
+		var ok = split?[2];
+		if (ok != "0") throw new InvalidDataException("Commit failed");
+	}
+	#endregion PARAMETERS	
+
+	#region KEYMAP
+	/// <summary>
+	/// Gets the key binding at <paramref name="index"/>.
+	/// <para>CC1: 0-89</para>
+	/// <para>CCL: 0-66</para>
+	/// </summary>
+	public void GetKeymap(int index)
+	{
+		var response = Query($"VAR B3 {index}");
+		var split = response?.Split(" ");
+		var actionID = int.Parse(split?[4]);
+		var action = Maps.ActionMap[actionID];
+	}
+	#endregion KEYMAP
+
+	private void Send(string query)
+	{
+		Query(query, false);
+	}
+	private string? Query(string query)
+	{
+		return Query(query, true);
+	}
+
+	private string? Query(string query, bool readResponse)
+	{
+		StringBuilder logBuilder = new();
+		try
+		{
+			lock (_serialLock)
+			{
+				if (_port is null || !_port.IsOpen)
+					throw new InvalidOperationException("Cannot execute query: No connection established");
+				logBuilder.Append($"Sending: '{query}'... ");
+
+				var bytes = Encoding.UTF8.GetBytes(query + "\r\n");
+				_port?.Write(bytes, 0, bytes.Length);
+
+				if (!readResponse)
+					return null;
+				else
+				{
+					var result = _port?.ReadTo("\r\n");
+					logBuilder.Append($"Received '{result}'");
+					return result;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			logBuilder.Append($"Exception occurred '{ex}' ");
+			throw;
+		}
+		finally
+		{
+			Log(logBuilder.ToString());
+		}
+	}
 
 	public void Dispose()
 	{
