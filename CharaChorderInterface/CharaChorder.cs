@@ -45,12 +45,16 @@ public class CharaChorder : IDisposable
 
 		//cc._port.DataReceived += (object sender, SerialDataReceivedEventArgs e) =>
 		//{
-		//	Console.WriteLine("Data received");
+		//	Console.WriteLine($"Data received");
 		//};
-		cc._port.PinChanged += (object sender, SerialPinChangedEventArgs e) =>
-		{
-			Console.WriteLine("Pin changed");
-		};
+		//cc._port.PinChanged += (object sender, SerialPinChangedEventArgs e) =>
+		//{
+		//	Console.WriteLine("Pin changed");
+		//};
+		//cc._port.ErrorReceived += (object sender, SerialErrorReceivedEventArgs e) =>
+		//{
+		//	Console.WriteLine("error received");
+		//};
 
 		try { cc._port.Open(); }
 		catch (UnauthorizedAccessException ex) { ThrowUnauthorized(ex); }
