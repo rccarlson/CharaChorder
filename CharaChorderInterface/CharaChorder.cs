@@ -300,14 +300,8 @@ public class CharaChorder : IDisposable
 	}
 	#endregion KEYMAP
 
-	private void Send(string query)
-	{
-		Query(query, false);
-	}
-	private string? Query(string query)
-	{
-		return Query(query, true);
-	}
+	private void Send(string query) => Query(query, false);
+	private string? Query(string query) => Query(query, true);
 
 	private string? Query(string query, bool readResponse)
 	{
