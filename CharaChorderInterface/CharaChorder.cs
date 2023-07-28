@@ -70,7 +70,6 @@ public class CharaChorder : IDisposable
 	{
 		var result = Query("ID");
 		var components = result?.Split(" ");
-		var command = components?[0];
 		return new DeviceID()
 		{
 			Company = components?[1],
