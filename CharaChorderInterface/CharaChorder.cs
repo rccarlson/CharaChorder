@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using CharaChorder.Utility;
 using CharaChorderInterface.Structs;
@@ -323,7 +324,10 @@ public class CharaChorder : IDisposable
 				{
 					var result = _port?.ReadTo("\r\n");
 					logBuilder.Append($"Received '{result}'");
-					return result;
+					var headerMatch = Regex.Match(result ?? string.Empty, @"(?:([0-9+]+) )?([A-Z]+.*)");
+					var header = headerMatch?.Groups?[1]?.Value;
+					var response = headerMatch?.Groups?[2]?.Value;
+					return response;
 				}
 			}
 		}
