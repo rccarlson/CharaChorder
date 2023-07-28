@@ -37,3 +37,9 @@ public enum OperatingSystem
 	Android = 4,
 	Unknown = 255,
 }
+
+public enum Keymap { 
+	Primary,
+	Num,
+	Function
+}

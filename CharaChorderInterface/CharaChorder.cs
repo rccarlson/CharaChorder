@@ -292,12 +292,23 @@ public class CharaChorder : IDisposable
 	/// <para>CC1: 0-89</para>
 	/// <para>CCL: 0-66</para>
 	/// </summary>
-	public void GetKeymap(int index)
+	public string? GetKeymap(Keymap keymap, int index)
 	{
-		var response = Query($"VAR B3 {index}");
+		var keymapCode = keymap switch
+		{
+			Keymap.Primary => "A1",
+			Keymap.Num => "A2",
+			Keymap.Function => "A3",
+			_ => throw new NotImplementedException(),
+		};
+		var response = Query($"VAR B3 {keymapCode} {index}");
 		var split = response?.Split(" ");
-		var actionID = int.Parse(split?[4]);
+		var actionIdStr = split?[4];
+		var ok = split?[5];
+		if (ok != "0") throw new InvalidDataException($"Query failed. Error code: {ok}");
+		var actionID = int.Parse(actionIdStr ?? string.Empty);
 		var action = Maps.ActionMap[actionID];
+		return action;
 	}
 	#endregion KEYMAP
 
