@@ -227,7 +227,9 @@ public class CharaChorder : IDisposable
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int LEDBrightness { get => GetIntParameter("81"); set => SetIntParameter("81", value, 0, 50); }
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int LEDColorCode { get => throw new NotImplementedException("82"); set => throw new NotImplementedException("82"); }
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableLEDKeyHighlight { get => GetBoolParameter("83"); set => SetBoolParameter("83", value); }
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public OperatingSystem OperatingSystem {
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	public OperatingSystem OperatingSystem
+	{
 		get
 		{
 			var osStr = GetParameter("91");
@@ -243,7 +245,8 @@ public class CharaChorder : IDisposable
 	private int GetIntParameter(string parameterName) => int.Parse(GetParameter(parameterName));
 	private void SetIntParameter(string parameterName, int value) => SetParameter(parameterName, value.ToString());
 	private void SetIntParameter(string parameterName, int value, int min, int max) => SetParameter(parameterName, value.Clamp(min, max).ToString());
-	private bool GetBoolParameter(string parameterName) { 
+	private bool GetBoolParameter(string parameterName)
+	{
 		var response = GetParameter(parameterName);
 		return response switch
 		{
