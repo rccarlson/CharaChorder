@@ -320,6 +320,7 @@ public class CharaChorder : IDisposable
 	}
 	#endregion KEYMAP
 
+	#region SERIAL
 	private void Send(string query) => Query(query, false);
 	private string? Query(string query) => Query(query, true);
 
@@ -360,6 +361,7 @@ public class CharaChorder : IDisposable
 			Log(logBuilder.ToString());
 		}
 	}
+	#endregion SERIAL
 
 	public void Dispose()
 	{
