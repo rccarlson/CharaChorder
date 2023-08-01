@@ -16,6 +16,9 @@ public class CharaChorder : IDisposable
 	public Action<string> Log = Console.WriteLine;
 	private object _serialLock = new object();
 
+	Lazy<DeviceModel> _deviceModel;
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public DeviceModel DeviceModel => _deviceModel.Value;
+
 	#region CONSTRUCTION
 	private SerialPort? _port = null;
 	public bool IsOpen => _port is not null && _port.IsOpen;
@@ -25,7 +28,19 @@ public class CharaChorder : IDisposable
 			.Select(port => (port.name, port.bus_description))
 			.ToArray();
 
-	private CharaChorder() { }
+	private CharaChorder(SerialPort port)
+	{
+		this._port = port;
+		_deviceModel = new Lazy<DeviceModel>(() =>
+		{
+			var device = GetID().Device;
+			return device switch
+			{
+				"ONE" => DeviceModel.One,
+				_ => throw new NotSupportedException(device),
+			};
+		});
+	}
 
 	/// <summary>
 	/// Build a <see cref="CharaChorder"/> from a serial port
@@ -34,27 +49,14 @@ public class CharaChorder : IDisposable
 	/// <returns></returns>
 	public static CharaChorder? FromSerial(string serialPortName)
 	{
-		var cc = new CharaChorder()
+		var cc = new CharaChorder(
+			port: new SerialPort(serialPortName, baudRate: BaudRate)
 		{
-			_port = new SerialPort(serialPortName, baudRate: BaudRate)
-			{
 				DtrEnable = true,
+				ReceivedBytesThreshold = 1,
 				ReadTimeout = 5_000,
 			}
-		};
-
-		//cc._port.DataReceived += (object sender, SerialDataReceivedEventArgs e) =>
-		//{
-		//	Console.WriteLine($"Data received");
-		//};
-		//cc._port.PinChanged += (object sender, SerialPinChangedEventArgs e) =>
-		//{
-		//	Console.WriteLine("Pin changed");
-		//};
-		//cc._port.ErrorReceived += (object sender, SerialErrorReceivedEventArgs e) =>
-		//{
-		//	Console.WriteLine("error received");
-		//};
+			);
 
 		try { cc._port.Open(); }
 		catch (UnauthorizedAccessException ex) { ThrowUnauthorized(ex); }
