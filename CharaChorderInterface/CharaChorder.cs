@@ -300,13 +300,13 @@ public class CharaChorder : IDisposable
 	/// <para>CC1: 0-89</para>
 	/// <para>CCL: 0-66</para>
 	/// </summary>
-	public string? GetKeymap(Keymap keymap, int index)
+	public string? GetKeymap(KeymapLayer keymap, int index)
 	{
 		var keymapCode = keymap switch
 		{
-			Keymap.Primary => "A1",
-			Keymap.Num => "A2",
-			Keymap.Function => "A3",
+			KeymapLayer.Primary => "A1",
+			KeymapLayer.Num => "A2",
+			KeymapLayer.Function => "A3",
 			_ => throw new NotImplementedException(),
 		};
 		var response = Query($"VAR B3 {keymapCode} {index}");

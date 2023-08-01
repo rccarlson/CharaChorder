@@ -38,8 +38,14 @@ public enum OperatingSystem
 	Unknown = 255,
 }
 
-public enum Keymap { 
+public enum KeymapLayer { 
 	Primary,
 	Num,
 	Function
+}
+
+public enum DeviceModel
+{
+	One,
+	Lite,
 }
