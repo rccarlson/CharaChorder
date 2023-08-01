@@ -39,7 +39,7 @@ public static class Maps
     return reader.ReadToEnd().Split(Environment.NewLine);
 	}
 
-  public static readonly string[] ActionMap = ReadLinesFromResource("CharaChorder.Data.ActionMap.txt")
+  public static readonly string[] ActionMap = ReadLinesFromResource("CharaChorderInterface.Data.ActionMap.txt")
     .Select(line => line.ReadToLastInstanceOf("//"))
     .ToArray();
 }
