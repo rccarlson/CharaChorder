@@ -144,4 +144,15 @@ public class Chordmap
 
 		return hexChord;
 	}
+
+	public static Chordmap?[] ReadAllFromDevice(CharaChorder cc)
+	{
+		var count = cc.GetChordmapCount() ?? 0;
+		var chords = new Chordmap?[count];
+		for (int i = 0; i < count; i++)
+		{
+			chords[i] = cc.GetChordmapByIndex((ushort)i);
+		}
+		return chords;
+	}
 }
