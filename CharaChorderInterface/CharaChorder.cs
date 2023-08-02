@@ -16,6 +16,7 @@ public class CharaChorder : IDisposable
 	static readonly int[] VendorIDs = new int[] { 0x239A, 0x303A };
 	public Action<string> Log = Console.WriteLine;
 	private object _serialLock = new object();
+	public bool UsePropertyCaching { get; set; } = true;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	public DeviceModel DeviceModel
@@ -254,9 +255,10 @@ public class CharaChorder : IDisposable
 
 	private string GetParameter(string parameterCode)
 	{
+		if (UsePropertyCaching && _propertyCache.TryGetValue(parameterCode, out var cachedValue) && cachedValue is not null) return cachedValue;
 		var response = QueryWithEcho($"VAR B1 {parameterCode}");
 		var split = response?.Split(" ");
-		var dataOut = split?[3];
+		var dataOut =_propertyCache[parameterCode] = split?[3];
 		var ok = split?[4];
 		if (ok != "0") throw new InvalidDataException($"Failed to query parameter {parameterCode}. Exception code: {ok}");
 		return dataOut ?? string.Empty;
@@ -265,10 +267,13 @@ public class CharaChorder : IDisposable
 	{
 		var response = QueryWithEcho($"VAR B2 {parameterCode} {dataIn}");
 		var split = response?.Split(" ");
-		var dataOut = split?[3];
+		var dataOut = _propertyCache[parameterCode] = split?[3];
 		var ok = split?[4];
 		if (ok != "0") throw new InvalidDataException($"Failed to query parameter {parameterCode}. Exception code: {ok}");
 	}
+
+	Dictionary<string, string?> _propertyCache = new();
+	public void ResetPropertyCaches() => _propertyCache.Clear();
 
 	public void Commit()
 	{
