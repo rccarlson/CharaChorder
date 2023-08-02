@@ -49,3 +49,10 @@ public enum DeviceModel
 	One,
 	Lite,
 }
+
+public enum ResponseType
+{
+	Chord = 30,
+	Boolean = 01,
+	Logging = 60,
+}

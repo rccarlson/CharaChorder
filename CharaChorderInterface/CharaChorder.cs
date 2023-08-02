@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using CharaChorder.Utility;
 using CharaChorderInterface.Structs;
+using CharaChorderInterface.Utility;
 
 namespace CharaChorderInterface;
 
@@ -16,22 +17,10 @@ public class CharaChorder : IDisposable
 	public Action<string> Log = Console.WriteLine;
 	private object _serialLock = new object();
 
-	Lazy<DeviceModel> _deviceModel;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public DeviceModel DeviceModel => _deviceModel.Value;
-
-	#region CONSTRUCTION
-	private SerialPort? _port = null;
-	public bool IsOpen => _port is not null && _port.IsOpen;
-
-	public static (string? PortName, string? Description)[] GetSerialPorts()
-		=> Utility.SerialUtility.GetAllCOMPorts()
-			.Select(port => (port.name, port.bus_description))
-			.ToArray();
-
-	private CharaChorder(SerialPort port)
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	public DeviceModel DeviceModel
 	{
-		this._port = port;
-		_deviceModel = new Lazy<DeviceModel>(() =>
+		get
 		{
 			var device = GetID().Device;
 			return device switch
@@ -39,8 +28,17 @@ public class CharaChorder : IDisposable
 				"ONE" => DeviceModel.One,
 				_ => throw new NotSupportedException(device),
 			};
-		});
+		}
 	}
+
+	#region CONSTRUCTION
+	private SerialPort? _port = null;
+	private SerialManager _serialManager;
+
+	public static (string? PortName, string? Description)[] GetSerialPorts()
+		=> Utility.SerialUtility.GetAllCOMPorts()
+			.Select(port => (port.name, port.bus_description))
+			.ToArray();
 
 	/// <summary>
 	/// Build a <see cref="CharaChorder"/> from a serial port
@@ -49,32 +47,19 @@ public class CharaChorder : IDisposable
 	/// <returns></returns>
 	public static CharaChorder? FromSerial(string serialPortName)
 	{
-		var cc = new CharaChorder(
-			port: new SerialPort(serialPortName, baudRate: BaudRate)
+		var cc = new CharaChorder()
 		{
-				DtrEnable = true,
-				ReceivedBytesThreshold = 1,
-				ReadTimeout = 5_000,
-			}
-			);
-
-		try { cc._port.Open(); }
-		catch (UnauthorizedAccessException ex) { ThrowUnauthorized(ex); }
-		if (!cc._port.IsOpen) ThrowUnauthorized();
+			_serialManager = new(serialPortName),
+		};
+		cc._serialManager.Open();
 		return cc;
-
-		void ThrowUnauthorized(UnauthorizedAccessException? ex = null)
-		{
-			cc?.Dispose();
-			throw new UnauthorizedAccessException($"Unable to open port {serialPortName}. Is it open elsewhere?", ex);
-		}
 	}
 	#endregion CONSTRUCTION
 
 	#region DEVICE INFO
 	public DeviceID GetID()
 	{
-		var result = Query("ID");
+		var result = QueryWithEcho("ID");
 		var components = result?.Split(" ");
 		return new DeviceID()
 		{
@@ -88,7 +73,7 @@ public class CharaChorder : IDisposable
 	{
 		const int ErrValue = 0;
 
-		var result = Query("VERSION");
+		var result = QueryWithEcho("VERSION");
 		var resultComponents = result?.Split(" ");
 		var versionComponents = resultComponents?[1].Split(".");
 		var version = new Version(
@@ -113,7 +98,7 @@ public class CharaChorder : IDisposable
 	#region CHORD MANAGEMENT
 	public int? GetChordmapCount()
 	{
-		var response = Query("CML C0");
+		var response = QueryWithEcho("CML C0");
 		var countStr = response?.Split(" ")[2];
 		if (!int.TryParse(countStr, out var chordCount))
 			throw new InvalidDataException($"Could not parse device response: '{countStr}' to int");
@@ -122,7 +107,7 @@ public class CharaChorder : IDisposable
 
 	public Chordmap? GetChordmapByIndex(ushort index)
 	{
-		var response = Query($"CML C1 {index}");
+		var response = QueryWithEcho($"CML C1 {index}");
 		var split = response?.Split(" ");
 		var chord = split?[3];
 		var phrase = split?[4];
@@ -134,7 +119,7 @@ public class CharaChorder : IDisposable
 
 	public Chordmap? GetChordmapByChord(string hexChord)
 	{
-		var response = Query($"CML C2 {hexChord}");
+		var response = QueryWithEcho($"CML C2 {hexChord}");
 		var split = response?.Split(" ");
 		var chord = split?[2];
 		var phrase = split?[3];
@@ -147,7 +132,7 @@ public class CharaChorder : IDisposable
 
 	public void SetChordmap(Chordmap chord)
 	{
-		var response = Query($"CML C3 {chord.HexChord} {chord.HexPhrase}");
+		var response = QueryWithEcho($"CML C3 {chord.HexChord} {chord.HexPhrase}");
 		var split = response?.Split(" ");
 		var ok = split?[4];
 		if (ok != "0") throw new InvalidDataException($"Chord creation failed. Code: {ok}");
@@ -155,7 +140,7 @@ public class CharaChorder : IDisposable
 
 	public void DeleteChordmap(Chordmap chord)
 	{
-		var response = Query($"CML C4 {chord.HexChord}");
+		var response = QueryWithEcho($"CML C4 {chord.HexChord}");
 		var split = response?.Split(" ");
 		var ok = split?[3];
 		if (ok != "0") throw new InvalidDataException($"Chord deletion failed. Code: {ok}");
@@ -179,7 +164,7 @@ public class CharaChorder : IDisposable
 			ResetType.Func => "FUNC",
 			_ => throw new NotImplementedException(resetType.ToString())
 		};
-		Send($"RST {subcommand}");
+		_ = QueryWithEcho($"RST {subcommand}");
 	}
 	#endregion RESET
 
@@ -269,7 +254,7 @@ public class CharaChorder : IDisposable
 
 	private string GetParameter(string parameterCode)
 	{
-		var response = Query($"VAR B1 {parameterCode}");
+		var response = QueryWithEcho($"VAR B1 {parameterCode}");
 		var split = response?.Split(" ");
 		var dataOut = split?[3];
 		var ok = split?[4];
@@ -278,7 +263,7 @@ public class CharaChorder : IDisposable
 	}
 	private void SetParameter(string parameterCode, string dataIn)
 	{
-		var response = Query($"VAR B2 {parameterCode} {dataIn}");
+		var response = QueryWithEcho($"VAR B2 {parameterCode} {dataIn}");
 		var split = response?.Split(" ");
 		var dataOut = split?[3];
 		var ok = split?[4];
@@ -287,7 +272,7 @@ public class CharaChorder : IDisposable
 
 	public void Commit()
 	{
-		var response = Query("VAR B0");
+		var response = QueryWithEcho("VAR B0");
 		var split = response?.Split(" ");
 		var ok = split?[2];
 		if (ok != "0") throw new InvalidDataException("Commit failed");
@@ -309,7 +294,7 @@ public class CharaChorder : IDisposable
 			KeymapLayer.Function => "A3",
 			_ => throw new NotImplementedException(),
 		};
-		var response = Query($"VAR B3 {keymapCode} {index}");
+		var response = QueryWithEcho($"VAR B3 {keymapCode} {index}");
 		var split = response?.Split(" ");
 		var actionIdStr = split?[4];
 		var ok = split?[5];
@@ -321,45 +306,29 @@ public class CharaChorder : IDisposable
 	#endregion KEYMAP
 
 	#region SERIAL
-	private void Send(string query) => Query(query, false);
-	private string? Query(string query) => Query(query, true);
 
-	private string? Query(string query, bool readResponse)
+
+
+	private string? QueryWithEcho(string query)
 	{
-		StringBuilder logBuilder = new();
-		try
-		{
-			lock (_serialLock)
-			{
-				if (_port is null || !_port.IsOpen)
-					throw new InvalidOperationException("Cannot execute query: No connection established");
-				logBuilder.Append($"Sending: '{query}'... ");
+		var response = _serialManager.Query(query, @$"(?:([0-9+]+) )?({query}.*)", true);
+		if (response is null) return null;
+		var headerMatch = Regex.Match(response, @"(?:(\d{2}) )?([A-Z]+.*)"); // todo: move to generated regex
+		var parsedHeader = headerMatch?.Groups?[1]?.Value;
+		var parsedHesponse = headerMatch?.Groups?[2]?.Value;
+		var responseType = GetResponseType(parsedHeader);
+		return parsedHesponse;
+	}
 
-				var bytes = Encoding.UTF8.GetBytes(query + "\r\n");
-				_port?.Write(bytes, 0, bytes.Length);
-
-				if (!readResponse)
-					return null;
-				else
-				{
-					var result = _port?.ReadTo("\r\n");
-					logBuilder.Append($"Received '{result}'");
-					var headerMatch = Regex.Match(result ?? string.Empty, @"(?:([0-9+]+) )?([A-Z]+.*)");
-					var header = headerMatch?.Groups?[1]?.Value;
-					var response = headerMatch?.Groups?[2]?.Value;
-					return response;
-				}
-			}
-		}
-		catch (Exception ex)
+	private static ResponseType? GetResponseType(string? header)
+	{
+		if(header == null) return null;
+		return header switch
 		{
-			logBuilder.Append($"Exception occurred '{ex}' ");
-			throw;
-		}
-		finally
-		{
-			Log(logBuilder.ToString());
-		}
+			"01" => ResponseType.Boolean,
+			"30" => ResponseType.Chord,
+			_ => throw new NotImplementedException(header),
+		};
 	}
 	#endregion SERIAL
 
