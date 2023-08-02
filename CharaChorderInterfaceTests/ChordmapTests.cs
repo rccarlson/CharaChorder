@@ -102,10 +102,9 @@ public class ChordmapTests
 		Assert.That(endActions, Is.EqualTo(actionArr), message: $"'{action}' -> '{hexPhrase}' -> {string.Join(", ", endActions.Select(a => $"'{a}'"))}");
 	}
 
-	[Test]
 	[Description("Test that any single Action can be encoded as a hex phrase, then decoded back to a string without any loss. " +
 		"This test runs through all non-empty actions")]
-	public void RoundTripAllSingleActionPhrases()
+	[Test] public void RoundTripAllSingleActionPhrases()
 	{
 		Assert.Multiple(() =>
 		{

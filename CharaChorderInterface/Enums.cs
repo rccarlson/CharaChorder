@@ -38,7 +38,8 @@ public enum OperatingSystem
 	Unknown = 255,
 }
 
-public enum KeymapLayer { 
+public enum KeymapLayer
+{
 	Primary,
 	Num,
 	Function
