@@ -145,13 +145,14 @@ public class Chordmap
 		return hexChord;
 	}
 
-	public static Chordmap?[] ReadAllFromDevice(CharaChorder cc)
+	public static Chordmap?[] ReadAllFromDevice(CharaChorder cc, Action<int, int>? callback = null)
 	{
 		var count = cc.GetChordmapCount() ?? 0;
 		var chords = new Chordmap?[count];
 		for (int i = 0; i < count; i++)
 		{
 			chords[i] = cc.GetChordmapByIndex((ushort)i);
+			if (i % 3 == 0) callback?.Invoke(count, i);
 		}
 		return chords;
 	}
