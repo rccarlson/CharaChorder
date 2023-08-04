@@ -30,6 +30,8 @@ public class Chordmap
 	public string[] ChordActions => HexChordToActions(HexChord);
 	public string[] PhraseActions => HexPhraseToActions(HexPhrase);
 
+	public string AsciiPhrase => string.Join(string.Empty, PhraseActions);
+
 	private Chordmap(string hexChord, string hexPhrase)
 	{
 		HexChord = hexChord;
@@ -53,6 +55,9 @@ public class Chordmap
 			phraseActions: phrase.Select(c => c.ToString()).ToArray()
 			);
 	}
+
+	/// <inheritdoc cref="FromAscii(char[], string)"/>
+	public static Chordmap FromAscii(string chord, string phrase) => FromAscii(chord.ToCharArray(), phrase);
 
 	/// <summary> Gets the component actions from a given hex chord </summary>
 	internal static string[] HexChordToActions(string hex)
