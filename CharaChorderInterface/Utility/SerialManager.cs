@@ -34,15 +34,16 @@ public class SerialManager : IDisposable
 		Port = new SerialPort(portName)
 		{
 			DtrEnable = true,
-			ReceivedBytesThreshold = 1, // do not try to hold onto a lot of data before flushing it
+			ReceivedBytesThreshold = 1, // do not try to hold onto data before flushing it
 			ReadTimeout = 5_000,
 			BaudRate = BaudRate,
 		};
 		Port.DataReceived += OnDataReceived;
 		OnUnhandledSerialMessage += (sender, args) => LoggingAction?.Invoke($"log: {args.Message}");
+		// configure OnKeyPressChange listener
 		OnUnhandledSerialMessage += (sender, args) =>
 		{
-			var match = Regex.Match(args.Message, @"(?:(\d{2}) )?Actions_::trigger\((\d+),(\d+)\)");
+			var match = Regex.Match(args.Message, @"(?:(\d{2}) )?Actions_::trigger\((\d+),(\d+)\)"); // looks for Actions_::trigger(), possibly preceeded by a header
 			if (match.Success)
 			{
 				var key = match.Groups[2].Value;
@@ -94,14 +95,19 @@ public class SerialManager : IDisposable
 	private object _serialLock = new object();
 	internal SerialPort Port { get; }
 
-	/// <summary>
-	/// Amount of time (in milliseconds) to wait for the response for a query.
-	/// Note that this can be very slow if the CharaChorder is outputting a lot of debug information
-	/// </summary>
+	/// <summary> Amount of time (in milliseconds) to wait for the response for a query </summary>
 	public int QueryTimeoutMs { get; set; } = 3_000;
+	/// <summary> Time to wait for CharaChorder to respond while it sits idle </summary>
+	/// <remarks>
+	/// For example, if the CharaChorder is outputting large amounts of debug information, it may
+	/// take some time to reply to your query. Queries should not consider the request dead unless
+	/// the CharaChorder has left the line idle for <see cref="QueryIdleTimeoutMs"/> milliseconds.
+	/// </remarks>
 	public int QueryIdleTimeoutMs { get; set; } = 100;
 
+	/// <summary> Opens a serial connection </summary>
 	public void Open() => Port?.Open();
+	/// <summary> Closes the active serial connection </summary>
 	public void Close() => Port?.Close();
 	public bool IsOpen => Port?.IsOpen ?? false;
 
@@ -132,6 +138,9 @@ public class SerialManager : IDisposable
 	private Queue<string> _incomingSerialQueue = new();
 	private bool IsProcessingCommand = false;
 
+	/// <summary>
+	/// Fires and forgets a command to the CharaChorder
+	/// </summary>
 	public void Send(string query)
 	{
 		lock (_serialLock)
@@ -143,6 +152,9 @@ public class SerialManager : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Sends the <paramref name="query"/> to the CharaChorder and awaits a reply in the format defined by <paramref name="resultRegex"/> if <paramref name="awaitReply"/> is true.
+	/// </summary>
 	public string? Query(string query, [StringSyntax(StringSyntaxAttribute.Regex)] string resultRegex, bool awaitReply)
 	{
 		// TODO: this is jank, but it works
