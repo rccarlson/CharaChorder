@@ -14,8 +14,7 @@ public class CharaChorder : IDisposable
 {
 	const int BaudRate = 115_200;
 	static readonly int[] VendorIDs = new int[] { 0x239A, 0x303A };
-	public Action<string> Log = Console.WriteLine;
-	private object _serialLock = new object();
+	public Action<string>? LoggingAction { get; set; }
 	public bool UsePropertyCaching { get; set; } = true;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -27,14 +26,17 @@ public class CharaChorder : IDisposable
 			return device switch
 			{
 				"ONE" => DeviceModel.One,
+				"LITE" => DeviceModel.One,
 				_ => throw new NotSupportedException(device),
 			};
 		}
 	}
 
 	#region CONSTRUCTION
-	private SerialPort? _port = null;
 	private SerialManager _serialManager;
+	public bool IsOpen => _serialManager is not null && _serialManager.IsOpen;
+	public void Open() => _serialManager?.Open();
+	public void Close() => _serialManager?.Close();
 
 	public static (string? PortName, string? Description)[] GetSerialPorts()
 		=> Utility.SerialUtility.GetAllCOMPorts()
@@ -48,11 +50,11 @@ public class CharaChorder : IDisposable
 	/// <returns></returns>
 	public static CharaChorder? FromSerial(string serialPortName)
 	{
+		if (string.IsNullOrWhiteSpace(serialPortName)) return null;
 		var cc = new CharaChorder()
 		{
 			_serialManager = new(serialPortName),
 		};
-		cc._serialManager.Open();
 		return cc;
 	}
 	#endregion CONSTRUCTION
@@ -258,7 +260,7 @@ public class CharaChorder : IDisposable
 		if (UsePropertyCaching && _propertyCache.TryGetValue(parameterCode, out var cachedValue) && cachedValue is not null) return cachedValue;
 		var response = QueryWithEcho($"VAR B1 {parameterCode}");
 		var split = response?.Split(" ");
-		var dataOut =_propertyCache[parameterCode] = split?[3];
+		var dataOut = _propertyCache[parameterCode] = split?[3];
 		var ok = split?[4];
 		if (ok != "0") throw new InvalidDataException($"Failed to query parameter {parameterCode}. Exception code: {ok}");
 		return dataOut ?? string.Empty;
@@ -310,7 +312,6 @@ public class CharaChorder : IDisposable
 	}
 	#endregion KEYMAP
 
-	#region SERIAL
 	#region RAM
 	/// <summary>
 	/// Returns the current number of bytes available in SRAM. This is useful for debugging when there is a suspected heap or stack issue.
@@ -327,6 +328,8 @@ public class CharaChorder : IDisposable
 
 
 
+	#region SERIAL
+	public void Send(string query) => _serialManager.Send(query);
 	private string? QueryWithEcho(string query)
 	{
 		var response = _serialManager.Query(query, @$"(?:([0-9+]+) )?({query}.*)", true);
@@ -338,13 +341,13 @@ public class CharaChorder : IDisposable
 		return parsedHesponse;
 	}
 
-	private static ResponseType? GetResponseType(string? header)
+	private static SerialResponseType? GetResponseType(string? header)
 	{
-		if(header == null) return null;
+		if (string.IsNullOrEmpty(header)) return null;
 		return header switch
 		{
-			"01" => ResponseType.Boolean,
-			"30" => ResponseType.Chord,
+			"01" => SerialResponseType.QueryResponse,
+			"30" => SerialResponseType.Chord,
 			_ => throw new NotImplementedException(header),
 		};
 	}
@@ -352,10 +355,9 @@ public class CharaChorder : IDisposable
 
 	public void Dispose()
 	{
-		if (_port is not null)
+		if (_serialManager is not null)
 		{
-			if (_port.IsOpen) _port.Close();
-			_port.Dispose();
+			_serialManager.Dispose();
 		}
 		GC.SuppressFinalize(this); // CA1816
 	}
