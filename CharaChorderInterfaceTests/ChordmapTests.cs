@@ -42,7 +42,6 @@ public class ChordmapTests
 	[TestCase("00816011A06300000000000000000000", ExpectedResult = "RIGHT_SHIFT + LEFT_SHIFT + h + c")]
 	[TestCase("00860751D06F1B86D000000000000000", ExpectedResult = "DUP + u + t + o + n + m")]
 	[TestCase("001D4741BC0000000000000000000000", ExpectedResult = "u + t + o")]
-	[TestCase("001D4741BC0000000000000000000000", ExpectedResult = "u + t + o")]
 	public string HexChordToActions(string hex) => string.Join(" + ", Chordmap.HexChordToActions(hex));
 
 	[TestCase("6D6F756E7461696E", ExpectedResult = "mountain")]
@@ -57,6 +56,7 @@ public class ChordmapTests
 	[TestCase("7570", ExpectedResult = "up")]
 	[TestCase("7573", ExpectedResult = "us")]
 	[TestCase("646966666572656E74", ExpectedResult = "different")]
+	[TestCase("6361727065206469656D", ExpectedResult = "carpe diem")]
 	public string HexPhraseToAscii(string hex) => string.Join("", Chordmap.HexPhraseToActions(hex));
 
 	[TestCase("69660226280226290150", ExpectedResult = new string[] { "i", "f", "KM_2_L", "(", "KM_2_L", ")", "ARROW_LF" })]
