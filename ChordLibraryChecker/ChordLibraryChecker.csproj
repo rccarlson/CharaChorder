@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>Chord Library Checker</Title>
+    <Authors>Riley Carlson</Authors>
+    <Company>Riley Carlson</Company>
+    <Description>Loads your chord library from your CharaChorder device to help you find and create useful chords</Description>
+    <PackageProjectUrl>https://github.com/rccarlson/CharaChorder</PackageProjectUrl>
+    <PackageIcon>CharaChorder-logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/rccarlson/CharaChorder</RepositoryUrl>
+    <ApplicationIcon>CharaChorder_logo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="CharaChorder_logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\CharaChorder-logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CharaChorderInterface\CharaChorderInterface.csproj" />
+  </ItemGroup>
+
+</Project>
