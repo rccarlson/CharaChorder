@@ -15,13 +15,19 @@ namespace CharaChorderInterface.Utility;
 
 public record SerialEventArgs(string Message);
 public delegate void SerialLogMessageHandler(object sender, SerialEventArgs e);
+
 public record KeyPressEventArgs(string Key, bool IsPressed);
 public delegate void KeyPressEventHandler(object sender, KeyPressEventArgs e);
+
+public record ChordEnteredEventArgs(string ChordHex);
+public delegate void ChordEnteredHandler(object sender, ChordEnteredEventArgs e);
 
 public class SerialManager : IDisposable
 {
 	const int BaudRate = 115_200;
 	const string NewLine = "\r\n";
+
+	public Action<string>? LoggingAction { get; set; }
 
 	public SerialManager(string portName)
 	{
@@ -33,6 +39,7 @@ public class SerialManager : IDisposable
 			BaudRate = BaudRate,
 		};
 		Port.DataReceived += OnDataReceived;
+		OnUnhandledSerialMessage += (sender, args) => LoggingAction?.Invoke($"log: {args.Message}");
 		OnUnhandledSerialMessage += (sender, args) =>
 		{
 			var match = Regex.Match(args.Message, @"(?:(\d{2}) )?Actions_::trigger\((\d+),(\d+)\)");
@@ -49,10 +56,29 @@ public class SerialManager : IDisposable
 				OnKeyPressChange?.Invoke(this, keyPressArgs);
 			}
 		};
+		// configure OnChordEntered listener
+		OnUnhandledSerialMessage += (sender, args) =>
+		{
+			var match = Regex.Match(args.Message, @"^(?:(\d{2}) )?([A-F0-9]{32})$"); // looks for a chord, possibly preceeded by a header
+			if(match.Success)
+			{
+				var chord = match.Groups[2].Value;
+				var eventArgs = new ChordEnteredEventArgs(chord);
+				OnChordEntered?.Invoke(this, eventArgs);
+			}
+		};
 
 		OnKeyPressChange += (sender, args) =>
 		{
-			Console.WriteLine($"{args.Key} is pressed: {args.IsPressed}");
+			var state = args.IsPressed ? "pressed" : "released";
+			LoggingAction?.Invoke($"{args.Key} is {state}");
+		};
+		OnChordEntered += (sender, args) =>
+		{
+			var chord = args.ChordHex;
+			var phraseActions = Chordmap.HexChordToActions(args.ChordHex);
+			var phrase = string.Join("", phraseActions);
+			LoggingAction?.Invoke($"Chord entered: {chord} -> {phrase}");
 		};
 	}
 	public void Dispose()
@@ -62,6 +88,7 @@ public class SerialManager : IDisposable
 			Port.DataReceived -= OnDataReceived;
 			Port.Dispose();
 		}
+		GC.SuppressFinalize(this);
 	}
 
 	private object _serialLock = new object();
@@ -76,7 +103,7 @@ public class SerialManager : IDisposable
 
 	public void Open() => Port?.Open();
 	public void Close() => Port?.Close();
-	public bool IsOpen => Port.IsOpen;
+	public bool IsOpen => Port?.IsOpen ?? false;
 
 	private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
 	{
@@ -109,7 +136,7 @@ public class SerialManager : IDisposable
 	{
 		lock (_serialLock)
 		{
-			Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss:fff")} Sending: '{query}'... ");
+			LoggingAction?.Invoke($"{DateTime.Now.ToString("HH:mm:ss:fff")} Sending: '{query}'... ");
 
 			var bytes = Encoding.UTF8.GetBytes(query + NewLine);
 			Port?.Write(bytes, 0, bytes.Length);
@@ -156,11 +183,25 @@ public class SerialManager : IDisposable
 			finally
 			{
 				IsProcessingCommand = false;
-				Console.WriteLine($"'{query}' -> '{response}'");
+				LoggingAction?.Invoke($"'{query}' -> '{response}'");
 			}
 		}
 	}
 
+	/// <summary>
+	/// Triggered upon receiving a message that is not in response to an API request.
+	/// </summary>
 	public event SerialLogMessageHandler OnUnhandledSerialMessage;
+
+	/// <summary>
+	/// Requires <see cref="CharaChorder.EnableSerialDebugging"/> or <see cref="CharaChorder.EnableSerialLogging"/> to be <see langword="true"/>.
+	/// Otherwise, no events will be triggered.
+	/// </summary>
 	public event KeyPressEventHandler OnKeyPressChange;
+
+	/// <summary>
+	/// Requires <see cref="CharaChorder.EnableSerialChord"/> to be <see langword="true"/>.
+	/// Otherwise, no events will be triggered.
+	/// </summary>
+	public event ChordEnteredHandler OnChordEntered;
 }
