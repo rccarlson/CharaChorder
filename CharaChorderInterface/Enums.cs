@@ -51,9 +51,9 @@ public enum DeviceModel
 	Lite,
 }
 
-public enum ResponseType
+public enum SerialResponseType
 {
-	Chord = 30,
-	Boolean = 01,
-	Logging = 60,
+	QueryResponse = 01,
+	Chord         = 30,
+	Logging       = 60,
 }
