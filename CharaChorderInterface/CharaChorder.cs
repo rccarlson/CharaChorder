@@ -311,6 +311,19 @@ public class CharaChorder : IDisposable
 	#endregion KEYMAP
 
 	#region SERIAL
+	#region RAM
+	/// <summary>
+	/// Returns the current number of bytes available in SRAM. This is useful for debugging when there is a suspected heap or stack issue.
+	/// </summary>
+	public int? GetRam()
+	{
+		var response = QueryWithEcho("RAM");
+		var split = response?.Split(" ");
+		var bytesAvailable = split?[1];
+		if (int.TryParse(bytesAvailable, out var result)) return result;
+		else return null;
+	}
+	#endregion RAM
 
 
 
