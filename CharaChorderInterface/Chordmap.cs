@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CharaChorderInterface;
 
 [DebuggerDisplay("{HumanReadable,nq}")]
-public class Chordmap
+public class Chordmap : IEquatable<Chordmap?>
 {
 	public string HexChord { get; }
 	public string HexPhrase { get; }
@@ -165,4 +165,15 @@ public class Chordmap
 		}
 		return chords;
 	}
+
+	public override bool Equals(object? obj) => Equals(obj as Chordmap);
+
+	public bool Equals(Chordmap? other)
+	{
+		return other is not null &&
+					 HexChord == other.HexChord &&
+					 HexPhrase == other.HexPhrase;
+	}
+
+	public override int GetHashCode() => HashCode.Combine(HexChord, HexPhrase);
 }
