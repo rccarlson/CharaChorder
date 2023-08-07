@@ -19,18 +19,15 @@ public class Chordmap : IEquatable<Chordmap?>
 	{
 		get
 		{
-			var chordActions = HexChordToActions(HexChord);
-			var phraseActions = HexPhraseToActions(HexPhrase);
-			var asciiActions = string.Join(" + ", chordActions);
-			var asciiPhrase = string.Join("", phraseActions);
-			return $"{asciiActions} => {asciiPhrase}";
+			var asciiActions = string.Join(" + ", ChordActions);
+			return $"{asciiActions} => {AsciiPhrase}";
 		}
 	}
 
 	public string[] ChordActions => HexChordToActions(HexChord);
 	public string[] PhraseActions => HexPhraseToActions(HexPhrase);
 
-	public string AsciiPhrase => string.Join(string.Empty, PhraseActions);
+	public string AsciiPhrase => string.Join(string.Empty, PhraseActions.Select(ConvertActionMapToUserFriendly));
 
 	private Chordmap(string hexChord, string hexPhrase)
 	{
@@ -41,23 +38,35 @@ public class Chordmap : IEquatable<Chordmap?>
 	public static Chordmap FromHex(string hexChord, string hexPhrase) => new Chordmap(hexChord, hexPhrase);
 
 	public static Chordmap FromActions(string[] chordActions, string[] phraseActions)
-		=> FromHex(ActionsToHexChord(chordActions), ActionsToHexPhrase(phraseActions));
+		=> FromHex(
+			ActionsToHexChord(chordActions),
+			ActionsToHexPhrase(phraseActions.Where(Maps.ActionMap.Contains).ToArray())
+			);
+
+	/// <inheritdoc cref="FromActions(string[], string)"/>
+	public static Chordmap FromAscii(char[] chord, string phrase)
+	{
+		return FromAscii(chord.Select(c => c.ToString()).ToArray(), phrase);
+	}
+
+	/// <inheritdoc cref="FromAscii(char[], string)"/>
+	public static Chordmap FromAscii(string chord, string phrase) => FromAscii(chord.ToCharArray(), phrase);
 
 	/// <summary>
 	/// Creates a chord using standard ASCII. For any chords that need non-ASCII chord actions, use <see cref="FromActions(string[], string[])"/>.
 	/// </summary>
 	/// <param name="chord"> All <see cref="char"/>s to be used in the chord </param>
 	/// <param name="phrase"> The output of the chord </param>
-	public static Chordmap FromAscii(char[] chord, string phrase)
+	public static Chordmap FromAscii(string[] chord, string phrase)
 	{
 		return FromActions(
-			chordActions: chord.Select(c => c.ToString()).ToArray(),
-			phraseActions: phrase.Select(c => c.ToString()).ToArray()
+			chordActions: chord,
+			phraseActions: phrase
+				.Select(c => c.ToString())
+				.Select(ConvertToActionMapFriendly)
+				.ToArray()
 			);
 	}
-
-	/// <inheritdoc cref="FromAscii(char[], string)"/>
-	public static Chordmap FromAscii(string chord, string phrase) => FromAscii(chord.ToCharArray(), phrase);
 
 	/// <summary> Gets the component actions from a given hex chord </summary>
 	internal static string[] HexChordToActions(string hex)
@@ -165,6 +174,31 @@ public class Chordmap : IEquatable<Chordmap?>
 			if (i % 3 == 0) callback?.Invoke(count, i);
 		}
 		return chords;
+	}
+
+	/// <summary>
+	/// Takes an ASCII
+	/// </summary>
+	/// <param name="action"></param>
+	/// <returns></returns>
+	public static string ConvertToActionMapFriendly(string action)
+	{
+		return action switch
+		{
+			"\n" => "ENTER",
+			"\t" => "TAB",
+			_ => action
+		};
+	}
+
+	public static string ConvertActionMapToUserFriendly(string action)
+	{
+		return action switch
+		{
+			"ENTER" => "\n",
+			"TAB" => "\t",
+			_ => action
+		};
 	}
 
 	public static void Write(string filepath, Chordmap?[] chordmaps)
