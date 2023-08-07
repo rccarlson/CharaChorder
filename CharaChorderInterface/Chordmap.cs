@@ -130,6 +130,7 @@ public class Chordmap
 
 	internal static string ActionsToHexChord(string[] actions)
 	{
+		static string NormalizeHex(string hex, int targetLength) => hex.TrimStart('0').PadLeft(targetLength, '0');
 		if (actions.Length > 12) throw new ArgumentOutOfRangeException("Only support up to 12 keys");
 
 		var actionIndices = actions
@@ -138,11 +139,11 @@ public class Chordmap
 
 		var chainIndex = 0; // left as a todo by Dot I/O
 		var binChord = new StringBuilder()
-			.Append(NumberUtility.DecToBin(chainIndex).PadLeft(8, '0'));
+			.Append(NormalizeHex(NumberUtility.DecToBin(chainIndex), 8));
 
 		foreach (var decChordPart in actionIndices)
 		{
-			binChord.Append(NumberUtility.DecToBin(decChordPart).PadLeft(10, '0'));
+			binChord.Append(NormalizeHex(NumberUtility.DecToBin(decChordPart), 10));
 		}
 
 		var hexChord = NumberUtility.BinToHex(binChord.ToString().PadRight(128, '0'));

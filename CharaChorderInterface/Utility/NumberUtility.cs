@@ -89,16 +89,14 @@ internal static class NumberUtility
 		return hexadecimalNumber;
 	}
 
-	public static string DecToBin(int dec) => DecToBin(dec.ToString());
-	public static string DecToBin(string dec)
+	public static string DecToBin(int dec)
 	{
-		BigInteger number = BigInteger.Parse(dec);
 		StringBuilder binary = new();
-		while (number != 0)
+
+		for (int i = 31; i >= 0; i--)
 		{
-			BigInteger remainder = number % 2;
-			binary.Insert(0, remainder);
-			number /= 2;
+			var value = dec & (1 << i);
+			binary.Append(value == 0 ? '0' : '1');
 		}
 		return binary.ToString();
 	}

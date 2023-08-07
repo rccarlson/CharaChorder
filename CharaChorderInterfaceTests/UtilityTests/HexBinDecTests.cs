@@ -20,11 +20,18 @@ public class HexBinDecTests
 	[TestCase("EA1016", ExpectedResult = "15339542")]
 	public string HexToDec(string hex) => NumberUtility.HexToDec(hex);
 
-	[TestCase("99", ExpectedResult = "1100011")]
-	[TestCase("123", ExpectedResult = "1111011")]
-	[TestCase("420", ExpectedResult = "110100100")]
-	[TestCase("123456789", ExpectedResult = "111010110111100110100010101")]
-	public string DecToBin(string dec) => NumberUtility.DecToBin(dec);
+	[TestCase(99, "1100011")]
+	[TestCase(123, "1111011")]
+	[TestCase(420, "110100100")]
+	[TestCase(123456789, "111010110111100110100010101")]
+	[TestCase(2147483647, "01111111111111111111111111111111")]
+	public void IntDecToBin(int dec, string expected)
+	{
+		var actual = NumberUtility.DecToBin(dec);
+		Assert.That(() => actual.EndsWith(expected), Is.True);
+		var leftPadding = actual[..^expected.Length];
+		Assert.That(() => leftPadding, Is.All.EqualTo('0'));
+	}
 
 	[TestCase("010101", ExpectedResult = "15")]
 	[TestCase("000100100011", ExpectedResult = "123")]
