@@ -13,8 +13,8 @@ public class ChordTests
 	{
 		Assert.Multiple(() =>
 		{
-			Assert.That(() => CharaChorderInterface.Chordmap.ActionsToHexChord(point.chord), Is.EqualTo(point.chordHex));
-			Assert.That(() => CharaChorderInterface.Chordmap.HexChordToActions(point.chordHex), Is.EqualTo(NormalizeActions(point.chord)));
+			Assert.That(() => CharaChorderInterface.Chordmap.ActionsToHexChord(point.chord), Is.EqualTo(point.chordHex), "Action -> Hex");
+			Assert.That(() => CharaChorderInterface.Chordmap.HexChordToActions(point.chordHex), Is.EqualTo(NormalizeActions(point.chord)), "Hex -> Action");
 		});
 	}
 
@@ -55,8 +55,8 @@ public class PhraseTests
 	{
 		Assert.Multiple(() =>
 		{
-			Assert.That(() => CharaChorderInterface.Chordmap.ActionsToHexPhrase(point.phrase), Is.EqualTo(point.phraseHex));
-			Assert.That(() => CharaChorderInterface.Chordmap.HexPhraseToActions(point.phraseHex), Is.EqualTo(point.phrase));
+			Assert.That(() => CharaChorderInterface.Chordmap.ActionsToHexPhrase(point.phrase), Is.EqualTo(point.phraseHex), "Action -> Hex");
+			Assert.That(() => CharaChorderInterface.Chordmap.HexPhraseToActions(point.phraseHex), Is.EqualTo(point.phrase), "Hex -> Action");
 		});
 	}
 
