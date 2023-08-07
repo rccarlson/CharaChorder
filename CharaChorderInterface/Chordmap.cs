@@ -201,6 +201,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		};
 	}
 
+	#region Serialization
 	public static void Write(string filepath, Chordmap?[] chordmaps)
 	{
 		using var file = File.OpenWrite(filepath);
@@ -242,6 +243,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		}
 		return chordmaps.ToArray();
 	}
+	#endregion Serialization
 
 	public override bool Equals(object? obj) => Equals(obj as Chordmap);
 

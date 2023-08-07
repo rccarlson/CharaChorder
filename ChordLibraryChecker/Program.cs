@@ -21,7 +21,7 @@ internal class Program
 	static void Main(string[] args)
 	{
 		// display help
-		if(ContainsAny(args.Select(a => a.ToLowerInvariant()), "-h", "--help", "/?"))
+		if (ContainsAny(args.Select(a => a.ToLowerInvariant()), "-h", "--help", "/?"))
 		{
 			Console.WriteLine("EagleBirdman's Chord Tool");
 			Console.WriteLine("Not affiliated with CharaChorder");
@@ -32,7 +32,7 @@ internal class Program
 				("--ForceMenu", "Will display the device selection menu, regardless of whether a suitable guess is found"),
 			};
 			var col1Width = table.Max(entry => entry.Item1.Length);
-			foreach(var entry in table)
+			foreach (var entry in table)
 			{
 				Console.WriteLine(entry.Item1.PadRight(col1Width + 3) + entry.Item2);
 			}
@@ -48,7 +48,8 @@ internal class Program
 		try
 		{
 			device?.Open();
-		}catch(UnauthorizedAccessException ex)
+		}
+		catch (UnauthorizedAccessException)
 		{
 			Console.Error.WriteLine("Unable to open connection to CharaChorder. Is the device open elsewhere?");
 			Thread.Sleep(5_000);
@@ -62,7 +63,6 @@ internal class Program
 		device.EnableSerialDebugging = false;
 		device.EnableSerialLogging = false;
 
-		loadChords:
 		Action<int, int> fractionalCompletionAction = (total, current) => Console.Write($"\rReading chords from device ({current}/{total})");
 		Action<int, int> percentileCompletionAction = (total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%)");
 		var chordReadStart = DateTime.Now;
