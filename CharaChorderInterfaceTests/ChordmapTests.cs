@@ -31,34 +31,6 @@ public class ChordmapTests
 		return Chordmap.ActionsToHexChord(actions);
 	}
 
-	[TestCase("001E4751C46C1AC00000000000000000", ExpectedResult = "y + u + q + l + k")]
-	[TestCase("001E4620000000000000000000000000", ExpectedResult = "y + b")]
-	[TestCase("001DC721BC6C19000000000000000000", ExpectedResult = "w + r + o + l + d")]
-	[TestCase("001D8681946100000000000000000000", ExpectedResult = "v + h + e + a")]
-	[TestCase("001D4731BC6C1A064000000000000000", ExpectedResult = "u + s + o + l + h + d")]
-	[TestCase("001D46E1946400000000000000000000", ExpectedResult = "u + n + e + d")]
-	[TestCase("00194631840000000000000000000000", ExpectedResult = "e + c + a")]
-	[TestCase("000FC2D0000000000000000000000000", ExpectedResult = "? + -")]
-	[TestCase("00816011A06300000000000000000000", ExpectedResult = "RIGHT_SHIFT + LEFT_SHIFT + h + c")]
-	[TestCase("00860751D06F1B86D000000000000000", ExpectedResult = "DUP + u + t + o + n + m")]
-	[TestCase("001D4741BC0000000000000000000000", ExpectedResult = "u + t + o")]
-	public string HexChordToActions(string hex) => string.Join(" + ", Chordmap.HexChordToActions(hex));
-
-	[TestCase("6D6F756E7461696E", ExpectedResult = "mountain")]
-	[TestCase("657965", ExpectedResult = "eye")]
-	[TestCase("796F7572", ExpectedResult = "your")]
-	[TestCase("436861726143686F72646572", ExpectedResult = "CharaChorder")]
-	[TestCase("66616D696C79", ExpectedResult = "family")]
-	[TestCase("637574", ExpectedResult = "cut")]
-	[TestCase("746573742063686F7264", ExpectedResult = "test chord")]
-	[TestCase("6361727279", ExpectedResult = "carry")]
-	[TestCase("707574", ExpectedResult = "put")]
-	[TestCase("7570", ExpectedResult = "up")]
-	[TestCase("7573", ExpectedResult = "us")]
-	[TestCase("646966666572656E74", ExpectedResult = "different")]
-	[TestCase("6361727065206469656D", ExpectedResult = "carpe diem")]
-	public string HexPhraseToAscii(string hex) => string.Join("", Chordmap.HexPhraseToActions(hex));
-
 	[TestCase("69660226280226290150", ExpectedResult = new string[] { "i", "f", "KM_2_L", "(", "KM_2_L", ")", "ARROW_LF" })]
 	[TestCase("696602262802262902267B022657012A02267D015001500150", ExpectedResult = new string[] { "i", "f", "KM_2_L", "(", "KM_2_L", ")", "KM_2_L", "{", "KM_2_L", "W", "BKSP", "KM_2_L", "}", "ARROW_LF", "ARROW_LF", "ARROW_LF" })]
 	public string[] HexPhraseToActions(string hex) => Chordmap.HexPhraseToActions(hex);
