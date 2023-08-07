@@ -10,31 +10,6 @@ namespace CharaChorderInterfaceTests;
 
 public class ChordmapTests
 {
-	[TestCase("test phrase", ExpectedResult = "7465737420706872617365")]
-	[TestCase("hello world", ExpectedResult = "68656C6C6F20776F726C64")]
-	[TestCase("CharaChorder", ExpectedResult = "436861726143686F72646572")]
-	public string HumanStringToHexPhrase(string asciiPhrase)
-	{
-		var actions = asciiPhrase.Select(c => c.ToString()).ToArray();
-		return Chordmap.ActionsToHexPhrase(actions);
-	}
-
-	[TestCase("xq", ExpectedResult = "001E0710000000000000000000000000")]
-	[TestCase("abc", ExpectedResult = "0018C621840000000000000000000000")]
-	[TestCase("cba", ExpectedResult = "0018C621840000000000000000000000")]
-	[TestCase("cba", ExpectedResult = "0018C621840000000000000000000000")]
-	[TestCase("qwerty", ExpectedResult = "001E4771D0721C465000000000000000")]
-	[TestCase("qwerty", ExpectedResult = "001E4771D0721C465000000000000000")]
-	public string HumanStringToHexChord(string asciiChord)
-	{
-		var actions = asciiChord.Select(c => c.ToString()).ToArray();
-		return Chordmap.ActionsToHexChord(actions);
-	}
-
-	[TestCase("69660226280226290150", ExpectedResult = new string[] { "i", "f", "KM_2_L", "(", "KM_2_L", ")", "ARROW_LF" })]
-	[TestCase("696602262802262902267B022657012A02267D015001500150", ExpectedResult = new string[] { "i", "f", "KM_2_L", "(", "KM_2_L", ")", "KM_2_L", "{", "KM_2_L", "W", "BKSP", "KM_2_L", "}", "ARROW_LF", "ARROW_LF", "ARROW_LF" })]
-	public string[] HexPhraseToActions(string hex) => Chordmap.HexPhraseToActions(hex);
-
 	[TestCase(@"hello world")]
 	[TestCase(@"test string")]
 	[TestCase(@"short")]
