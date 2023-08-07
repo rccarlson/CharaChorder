@@ -19,7 +19,7 @@ public class ChordTests
 	}
 
 	[DatapointSource]
-	private static IEnumerable<(string[], string)> GenerateChordTests()
+	internal static IEnumerable<(string[] Actions, string Hex)> GenerateChordTests()
 	{
 		yield return (AsciiToActions("uto"), "001D4741BC0000000000000000000000");
 		yield return (AsciiToActions("xq"), "001E0710000000000000000000000000");
@@ -61,7 +61,7 @@ public class PhraseTests
 	}
 
 	[DatapointSource]
-	private static IEnumerable<(string[], string)> GenerateChordTests()
+	internal static IEnumerable<(string[] Actions, string Hex)> GenerateChordTests()
 	{
 		yield return (AsciiToActions("mountain"), "6D6F756E7461696E");
 		yield return (AsciiToActions("eye"), "657965");

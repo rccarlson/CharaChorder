@@ -87,4 +87,34 @@ public class ChordmapTests
 			}
 		});
 	}
+
+	[Test]
+	[Description("Generates a sample chord library from Chords and Phrases and checks that no changes occurred during a write/read round trip")]
+	public void SaveLoadChordmaps()
+	{
+		using MemoryStream memStrm = new();
+		var sampleChordLibrary = GenerateChordLibary().ToArray();
+		Chordmap.Write(memStrm, sampleChordLibrary);
+		memStrm.Position = 0;
+		var readLibrary = Chordmap.Read(memStrm);
+		Assert.That(readLibrary.Length, Is.EqualTo(sampleChordLibrary.Length), "Not the same length");
+		var zipped = Enumerable.Zip(readLibrary, sampleChordLibrary);
+		foreach (var (actual, expected) in zipped)
+		{
+			Assert.That(() => actual, Is.EqualTo(expected));
+		}
+
+		IEnumerable<Chordmap> GenerateChordLibary()
+		{
+			var phrases = PhraseTests.GenerateChordTests().Select(tuple => tuple.Hex);
+			var chords = ChordTests.GenerateChordTests().Select(tuple => tuple.Hex);
+			foreach (var phrase in phrases)
+			{
+				foreach (var chord in chords)
+				{
+					yield return Chordmap.FromHex(chord, phrase);
+				}
+			}
+		}
+	}
 }

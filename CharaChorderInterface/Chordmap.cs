@@ -166,6 +166,48 @@ public class Chordmap : IEquatable<Chordmap?>
 		return chords;
 	}
 
+	public static void Write(string filepath, Chordmap?[] chordmaps)
+	{
+		using var file = File.OpenWrite(filepath);
+		Write(file, chordmaps);
+	}
+	public static void Write(Stream stream, Chordmap?[] chordmaps)
+	{
+		using StreamWriter writer = new(stream, leaveOpen: true);
+		var header = string.Join(",", new[] { "Hexadecimal Chord", "Hexadecimal Phrase", "Chord Actions", "Phrase ASCII" });
+		writer.WriteLine(header);
+		foreach (var chordmap in chordmaps)
+		{
+			if (chordmap is null) continue;
+			var chordActions = string.Join(" + ", chordmap.ChordActions);
+			var line = string.Join(",", new[] { chordmap.HexChord, chordmap.HexPhrase, chordActions, chordmap.AsciiPhrase });
+			writer.WriteLine(line);
+		}
+	}
+
+	public static Chordmap[] Read(string filepath)
+	{
+		using var file = File.OpenRead(filepath);
+		return Read(file);
+	}
+	public static Chordmap[] Read(Stream stream)
+	{
+		using StreamReader reader = new(stream, leaveOpen: true);
+		var header = reader.ReadLine();
+		List<Chordmap> chordmaps = new();
+		while (!reader.EndOfStream)
+		{
+			var line = reader.ReadLine();
+			var split = line?.Split(',');
+			var chord = split?[0];
+			var phrase = split?[1];
+			if (chord is null || phrase is null) continue;
+			var chordmap = Chordmap.FromHex(chord, phrase);
+			chordmaps.Add(chordmap);
+		}
+		return chordmaps.ToArray();
+	}
+
 	public override bool Equals(object? obj) => Equals(obj as Chordmap);
 
 	public bool Equals(Chordmap? other)
