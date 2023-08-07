@@ -121,6 +121,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		var chordsNotInActionMap = actions.Where(action => !Maps.ActionMap.Contains(action)).ToArray();
 
 		var actionIndices = actions
+			.Where(action => action is not null)
 			.Select(action =>
 			{
 				var idx = Array.IndexOf(Maps.ActionMap, action);
@@ -128,7 +129,7 @@ public class Chordmap : IEquatable<Chordmap?>
 				return Convert.ToString(idx, 16).PadLeft(padSize, '0').ToUpperInvariant();
 			});
 
-		return string.Join(string.Empty, actionIndices); // TODO: This squashes any null action indices
+		return string.Join(string.Empty, actionIndices);
 	}
 
 	internal static string ActionsToHexChord(string[] actions)
