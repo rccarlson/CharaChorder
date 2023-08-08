@@ -14,7 +14,16 @@ public class CharaChorder : IDisposable
 {
 	const int BaudRate = 115_200;
 	static readonly int[] VendorIDs = new int[] { 0x239A, 0x303A };
-	public Action<string>? LoggingAction { get; set; }
+	private Action<string>? _loggingAction = null;
+	public Action<string>? LoggingAction
+	{
+		get => _loggingAction;
+		set
+		{
+			_loggingAction = value;
+			_serialManager.LoggingAction = value;
+		}
+	}
 	public bool UsePropertyCaching { get; set; } = true;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
