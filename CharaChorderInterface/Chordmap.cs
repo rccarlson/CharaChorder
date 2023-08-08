@@ -37,14 +37,14 @@ public class Chordmap : IEquatable<Chordmap?>
 
 	public static Chordmap FromHex(string hexChord, string hexPhrase) => new Chordmap(hexChord, hexPhrase);
 
-	public static Chordmap FromActions(string[] chordActions, string[] phraseActions)
+	public static Chordmap FromActions(IEnumerable<string> chordActions, IEnumerable<string> phraseActions)
 		=> FromHex(
 			ActionsToHexChord(chordActions),
 			ActionsToHexPhrase(phraseActions.Where(Maps.ActionMap.Contains).ToArray())
 			);
 
 	/// <inheritdoc cref="FromActions(string[], string)"/>
-	public static Chordmap FromAscii(char[] chord, string phrase)
+	public static Chordmap FromAscii(IEnumerable<char> chord, string phrase)
 	{
 		return FromAscii(chord.Select(c => c.ToString()).ToArray(), phrase);
 	}
@@ -57,7 +57,7 @@ public class Chordmap : IEquatable<Chordmap?>
 	/// </summary>
 	/// <param name="chord"> All <see cref="char"/>s to be used in the chord </param>
 	/// <param name="phrase"> The output of the chord </param>
-	public static Chordmap FromAscii(string[] chord, string phrase)
+	public static Chordmap FromAscii(IEnumerable<string> chord, string phrase)
 	{
 		return FromActions(
 			chordActions: chord,
@@ -141,10 +141,10 @@ public class Chordmap : IEquatable<Chordmap?>
 		return string.Join(string.Empty, actionIndices);
 	}
 
-	internal static string ActionsToHexChord(string[] actions)
+	internal static string ActionsToHexChord(IEnumerable<string> actions)
 	{
 		static string NormalizeHex(string hex, int targetLength) => hex.TrimStart('0').PadLeft(targetLength, '0');
-		if (actions.Length > 12) throw new ArgumentOutOfRangeException("Only support up to 12 keys");
+		if (actions.Count() > 12) throw new ArgumentOutOfRangeException("Only support up to 12 keys");
 
 		var actionIndices = actions
 			.Select(action => Array.IndexOf(Maps.ActionMap, action)) // get index of action
