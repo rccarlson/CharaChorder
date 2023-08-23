@@ -20,6 +20,7 @@ internal class Program
 
 	static void Main(string[] args)
 	{
+		Console.Title = "Chord Library Checker";
 		// display help
 		if (ContainsAny(args.Select(a => a.ToLowerInvariant()), "-h", "--help", "/?"))
 		{
