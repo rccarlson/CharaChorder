@@ -150,9 +150,12 @@ public class CharaChorder : IDisposable
 		if (ok != "0") throw new InvalidDataException($"Chord creation failed. Code: {ok}");
 	}
 
-	public void DeleteChordmap(Chordmap chord)
+	public void DeleteChordmap(Chordmap chord) => DeleteChordmap(chord.HexChord);
+
+	public void DeleteChordmap(IEnumerable<string> actions) => DeleteChordmap(Chordmap.ActionsToHexChord(actions));
+	internal void DeleteChordmap(string hex)
 	{
-		var response = QueryWithEcho($"CML C4 {chord.HexChord}");
+		var response = QueryWithEcho($"CML C4 {hex}");
 		var split = response?.Split(" ");
 		var ok = split?[3];
 		if (ok != "0") throw new InvalidDataException($"Chord deletion failed. Code: {ok}"); // todo: this returned 2 on success. Change error case?
