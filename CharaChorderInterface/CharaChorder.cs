@@ -399,7 +399,7 @@ public class CharaChorder : IDisposable
 
 	private static SerialResponseType? GetResponseType(string? header) => header switch
 	{
-		null => null,
+		null or "" => null,
 		"01" => SerialResponseType.QueryResponse,
 		"30" => SerialResponseType.Chord,
 		"60" => SerialResponseType.Logging,
