@@ -384,27 +384,27 @@ public class CharaChorder : IDisposable
 
 	#region SERIAL
 	public void Send(string query) => _serialManager.Send(query);
+
+	private static readonly Regex queryResponseHeaderRegex = new(@"(?:(\d{2}) )?([A-Z]+.*)", RegexOptions.Compiled | RegexOptions.NonBacktracking);
 	private string? QueryWithEcho(string query)
 	{
 		var response = _serialManager.Query(query, @$"(?:([0-9+]+) )?({query}.*)", true);
 		if (response is null) return null;
-		var headerMatch = Regex.Match(response, @"(?:(\d{2}) )?([A-Z]+.*)"); // todo: move to generated regex
+		var headerMatch = queryResponseHeaderRegex.Match(response);
 		var parsedHeader = headerMatch?.Groups?[1]?.Value;
 		var parsedHesponse = headerMatch?.Groups?[2]?.Value;
 		var responseType = GetResponseType(parsedHeader);
 		return parsedHesponse;
 	}
 
-	private static SerialResponseType? GetResponseType(string? header)
+	private static SerialResponseType? GetResponseType(string? header) => header switch
 	{
-		if (string.IsNullOrEmpty(header)) return null;
-		return header switch
-		{
-			"01" => SerialResponseType.QueryResponse,
-			"30" => SerialResponseType.Chord,
-			_ => throw new NotImplementedException(header),
-		};
-	}
+		null => null,
+		"01" => SerialResponseType.QueryResponse,
+		"30" => SerialResponseType.Chord,
+		"60" => SerialResponseType.Logging,
+		_ => throw new NotImplementedException(header),
+	};
 	#endregion SERIAL
 
 	public void Dispose()
