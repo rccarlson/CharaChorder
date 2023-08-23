@@ -163,6 +163,46 @@ public class CharaChorder : IDisposable
 		return chords;
 	}
 
+	/// <summary>
+	/// Switches the library of the device.
+	/// If an existing library is not provided, the device will be queried for the full list, which will take some time.
+	/// </summary>
+	/// <param name="delta">
+	/// If <see langword="true"/>, will send only commands required to change between libraries.
+	/// <para/>
+	/// If <see langword="false"/>, will fully clear all chordmaps from the device and load in all new chords.
+	/// </param>
+	public void LoadLibrary(Chordmap[]? oldChords, Chordmap[] newChords, bool delta = true)
+	{
+		oldChords ??= ReadAllFromDevice().WhereNotNull().ToArray();
+		if (delta)
+		{
+			// delete only what's necessary, then add only what's necessary
+			var (toRemove, toAdd) = GetChordmapDelta(oldChords, newChords);
+			foreach (var chord in toRemove)
+				DeleteChordmap(chord);
+			foreach (var chord in toAdd)
+				SetChordmap(chord);
+		}
+		else
+		{
+			// delete all, then load all
+			foreach (var chord in oldChords)
+				DeleteChordmap(chord);
+			foreach (var chord in newChords)
+				SetChordmap(chord);
+		}
+	}
+
+	/// <summary>
+	/// Get the chords to remove from and add to the device to get the target chordmap
+	/// </summary>
+	private static (Chordmap[] ToRemove, Chordmap[] ToAdd) GetChordmapDelta(IEnumerable<Chordmap> oldChordmap, IEnumerable<Chordmap> newChordmap)
+	{
+		var toRemove = oldChordmap.Except(newChordmap).ToArray();
+		var toAdd = newChordmap.Except(oldChordmap).ToArray();
+		return (toRemove, toAdd);
+	}
 	#endregion CHORD MANAGEMENT
 
 	#region RESET
