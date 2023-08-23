@@ -2,15 +2,12 @@
 using CharaChorderInterface.Utility;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CharaChorderInterface;
 
-[DebuggerDisplay("{HumanReadable,nq}")]
+[System.Diagnostics.DebuggerDisplay("{HumanReadable,nq}")]
 public class Chordmap : IEquatable<Chordmap?>
 {
 	public string HexChord { get; }
@@ -128,7 +125,10 @@ public class Chordmap : IEquatable<Chordmap?>
 
 	public static string ActionsToHexPhrase(IEnumerable<string> actions)
 	{
+#if DEBUG
 		var chordsNotInActionMap = actions.Where(action => !Maps.ActionMap.Contains(action)).ToArray();
+		System.Diagnostics.Debug.Assert(chordsNotInActionMap.Length == 0, $"Actions not in action map: {string.Join(", ", chordsNotInActionMap)}");
+#endif
 
 		var actionIndices = actions
 			.Where(action => action is not null)
