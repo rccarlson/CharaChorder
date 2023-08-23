@@ -58,6 +58,7 @@ internal class Program
 		if (device?.IsOpen != true)
 		{
 			Console.Error.WriteLine("Unable to connect to device");
+			device?.Dispose();
 			goto selectDevice;
 		}
 		device.EnableSerialDebugging = false;
@@ -101,6 +102,7 @@ internal class Program
 		{
 			//if (device.IsOpen) goto loadChords;
 			//else goto selectDevice;
+			device?.Dispose();
 			goto selectDevice;
 		}
 
