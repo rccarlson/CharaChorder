@@ -200,11 +200,9 @@ public class Chordmap : IEquatable<Chordmap?>
 	public static void Write(Stream stream, Chordmap?[] chordmaps)
 	{
 		using StreamWriter writer = new(stream, leaveOpen: true);
-		var header = string.Join(",", new[] { "Hexadecimal Chord", "Hexadecimal Phrase", "Chord Actions", "Phrase ASCII" });
-		writer.WriteLine(header);
-		foreach (var chordmap in chordmaps)
+		writer.WriteLine(string.Join(",", new[] { "Hexadecimal Chord", "Hexadecimal Phrase", "Chord Actions", "Phrase ASCII" }));
+		foreach (var chordmap in chordmaps.WhereNotNull())
 		{
-			if (chordmap is null) continue;
 			var chordActions = string.Join(" + ", chordmap.ChordActions);
 			var line = string.Join(",", new[] { chordmap.HexChord, chordmap.HexPhrase, chordActions, chordmap.AsciiPhrase });
 			writer.WriteLine(line);

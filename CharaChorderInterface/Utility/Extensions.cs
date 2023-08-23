@@ -14,4 +14,11 @@ internal static class Extensions
 		else if (value.CompareTo(max) > 0) return max;
 		else return (T)value;
 	}
+
+	public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+	{
+		return source
+			.Where(x => x is not null)
+			.Cast<T>();
+	}
 }

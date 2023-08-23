@@ -51,4 +51,11 @@ public class ExtensionTests
 	[TestCase("abc////def", "//", ExpectedResult = "abc//")]
 	[TestCase("////def", "//", ExpectedResult = "//")]
 	public string ReadToLast(string value, string splitter) => value.ReadToLastInstanceOf(splitter);
+
+	[Test]
+	public void WhereNotNull()
+	{
+		Assert.That(new object?[] { "abc", 123, null, new object(), 123d, 123f }.WhereNotNull(), Is.Not.Contains(null));
+		Assert.That(new object?[] { null, null, null }.WhereNotNull(), Is.Not.Contains(null));
+	}
 }
