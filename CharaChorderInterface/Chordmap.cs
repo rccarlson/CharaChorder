@@ -223,10 +223,9 @@ public class Chordmap : IEquatable<Chordmap?>
 		{
 			var line = reader.ReadLine();
 			var split = line?.Split(',');
-			var chord = split?[0];
-			var phrase = split?[1];
+			var (chord, phrase) = (split?[0], split?[1]);
 			if (chord is null || phrase is null) continue;
-			var chordmap = Chordmap.FromHex(chord, phrase);
+			var chordmap = FromHex(chord, phrase);
 			chordmaps.Add(chordmap);
 		}
 		return chordmaps.ToArray();
