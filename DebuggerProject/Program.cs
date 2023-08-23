@@ -6,7 +6,7 @@ internal class Program
 	{
 		var actionmap = Maps.ActionMap;
 		var ports = CharaChorder.GetSerialPorts();
-		using var cc = CharaChorder.FromSerial("COM3");
+		using var cc = new CharaChorder("COM3");
 		if (cc is null) throw new NullReferenceException(nameof(cc));
 		cc.LoggingAction = Console.WriteLine;
 		cc.Open();

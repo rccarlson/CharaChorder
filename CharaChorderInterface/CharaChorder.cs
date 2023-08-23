@@ -27,22 +27,18 @@ public class CharaChorder : IDisposable
 	public bool UsePropertyCaching { get; set; } = true;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	public DeviceModel DeviceModel
+	public DeviceModel DeviceModel => DeviceID.Device switch
 	{
-		get
-		{
-			var device = GetID().Device;
-			return device switch
-			{
-				"ONE" => DeviceModel.One,
-				"LITE" => DeviceModel.One,
-				_ => throw new NotSupportedException(device),
-			};
-		}
-	}
+		"ONE" => DeviceModel.One,
+		"LITE" => DeviceModel.One,
+		_ => throw new NotSupportedException(DeviceID.Device),
+	};
+
+	private DeviceID? _deviceId = null;
+	public DeviceID DeviceID => _deviceId ??= GetID();
 
 	#region CONSTRUCTION
-	private SerialManager _serialManager;
+	private readonly SerialManager _serialManager;
 	public bool IsOpen => _serialManager is not null && _serialManager.IsOpen;
 	public void Open() => _serialManager?.Open();
 	public void Close() => _serialManager?.Close();
@@ -53,18 +49,12 @@ public class CharaChorder : IDisposable
 			.ToArray();
 
 	/// <summary>
-	/// Build a <see cref="CharaChorder"/> from a serial port
+	/// Opens a connection to a CharaChorder device on the specified serial port
 	/// </summary>
 	/// <param name="serialPortName"></param>
-	/// <returns></returns>
-	public static CharaChorder? FromSerial(string serialPortName)
+	public CharaChorder(string serialPortName)
 	{
-		if (string.IsNullOrWhiteSpace(serialPortName)) return null;
-		var cc = new CharaChorder()
-		{
-			_serialManager = new(serialPortName),
-		};
-		return cc;
+		_serialManager = new SerialManager(serialPortName);
 	}
 	#endregion CONSTRUCTION
 

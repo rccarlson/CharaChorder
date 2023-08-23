@@ -44,7 +44,7 @@ internal class Program
 		selectDevice:
 		var (serialPortName, serialPortDescription) = SelectDevice(args.Contains("--ForceMenu"));
 
-		var device = CharaChorder.FromSerial(serialPortName ?? string.Empty);
+		var device = new CharaChorder(serialPortName ?? string.Empty);
 		try
 		{
 			device?.Open();
