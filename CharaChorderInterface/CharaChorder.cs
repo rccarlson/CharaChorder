@@ -151,6 +151,18 @@ public class CharaChorder : IDisposable
 		if (ok != "0") throw new InvalidDataException($"Chord deletion failed. Code: {ok}"); // todo: this returned 2 on success. Change error case?
 	}
 
+	public Chordmap?[] ReadAllFromDevice(Action<int, int>? callback = null)
+	{
+		var count = GetChordmapCount() ?? 0;
+		var chords = new Chordmap?[count];
+		for (int i = 0; i < count; i++)
+		{
+			chords[i] = GetChordmapByIndex((ushort)i);
+			if (i % 3 == 0) callback?.Invoke(count, i);
+		}
+		return chords;
+	}
+
 	#endregion CHORD MANAGEMENT
 
 	#region RESET

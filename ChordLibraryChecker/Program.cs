@@ -67,7 +67,7 @@ internal class Program
 		Action<int, int> percentileCompletionAction = (total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%)");
 		var chordReadStart = DateTime.Now;
 		double GetRemainingSeconds(int total, int current) => (ETAEstimate(chordReadStart, DateTime.Now, 0, total, current) - DateTime.Now).TotalSeconds;
-		var chords = Chordmap.ReadAllFromDevice(device, (total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%, {Math.Round(GetRemainingSeconds(total, current), 0)}s) "));
+		var chords = device.ReadAllFromDevice((total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%, {Math.Round(GetRemainingSeconds(total, current), 0)}s) "));
 		var chordReadEnd = DateTime.Now;
 		device.Close();
 		device.Dispose();

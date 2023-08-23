@@ -1,4 +1,5 @@
-﻿using CharaChorderInterface.Utility;
+﻿using CharaChorder.Utility;
+using CharaChorderInterface.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -164,17 +165,6 @@ public class Chordmap : IEquatable<Chordmap?>
 		return hexChord;
 	}
 
-	public static Chordmap?[] ReadAllFromDevice(CharaChorder cc, Action<int, int>? callback = null)
-	{
-		var count = cc.GetChordmapCount() ?? 0;
-		var chords = new Chordmap?[count];
-		for (int i = 0; i < count; i++)
-		{
-			chords[i] = cc.GetChordmapByIndex((ushort)i);
-			if (i % 3 == 0) callback?.Invoke(count, i);
-		}
-		return chords;
-	}
 
 	/// <summary>
 	/// Takes an ASCII
