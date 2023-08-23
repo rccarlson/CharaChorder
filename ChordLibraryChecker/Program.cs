@@ -135,6 +135,27 @@ internal class Program
 		PrintChords(ConsoleColor.White, ConsoleColor.Black, partialMatchChords);
 		Console.WriteLine();
 
+		Console.WriteLine("-- Hex --");
+		Console.WriteLine();
+
+		string chordActions = "Not parsable as chord actions";
+		try { chordActions = string.Join(" + ", Chordmap.HexChordToActions(trimPrompt.PadRight(32, '0'))); } catch { }
+		Console.WriteLine($"Translation from Chord Hex: {chordActions}");
+
+		string phraseActions = "Not parsable as phrase actions";
+		try { phraseActions = string.Join("", Chordmap.HexPhraseToActions(trimPrompt)); } catch { }
+		Console.WriteLine($"Translation from Phrase Hex: {phraseActions}");
+
+		string chordHex = "Not parsable as chord hex";
+		try { chordHex = Chordmap.ActionsToHexChord(trimPrompt.Distinct().Select(x => x.ToString())); } catch { }
+		Console.WriteLine($"Translation to Chord Hex: {chordHex}");
+
+		string phraseHex = "Not parsable as chord hex";
+		try { phraseHex = Chordmap.ActionsToHexPhrase(trimPrompt.Select(x => x.ToString())); } catch { }
+		Console.WriteLine($"Translation to Phrase Hex: {phraseHex}");
+
+		Console.WriteLine();
+
 		goto startReadLoop;
 	}
 

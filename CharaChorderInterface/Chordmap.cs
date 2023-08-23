@@ -70,7 +70,7 @@ public class Chordmap : IEquatable<Chordmap?>
 	}
 
 	/// <summary> Gets the component actions from a given hex chord </summary>
-	internal static string[] HexChordToActions(string hex)
+	public static string[] HexChordToActions(string hex)
 	{
 		if (hex is null) return Array.Empty<string>();
 
@@ -93,7 +93,7 @@ public class Chordmap : IEquatable<Chordmap?>
 	}
 
 	/// <summary> Converts a hexadecemal string into an array of actions from <see cref="Maps.ActionMap"/> </summary>
-	internal static string[] HexPhraseToActions(string hex)
+	public static string[] HexPhraseToActions(string hex)
 	{
 		const int WordSize = 2;
 		const int LongWordSize = 4;
@@ -126,7 +126,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		return actions.ToArray();
 	}
 
-	internal static string ActionsToHexPhrase(string[] actions)
+	public static string ActionsToHexPhrase(IEnumerable<string> actions)
 	{
 		var chordsNotInActionMap = actions.Where(action => !Maps.ActionMap.Contains(action)).ToArray();
 
@@ -142,7 +142,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		return string.Join(string.Empty, actionIndices);
 	}
 
-	internal static string ActionsToHexChord(IEnumerable<string> actions)
+	public static string ActionsToHexChord(IEnumerable<string> actions)
 	{
 		static string NormalizeHex(string hex, int targetLength) => hex.TrimStart('0').PadLeft(targetLength, '0');
 		if (actions.Count() > 12) throw new ArgumentOutOfRangeException("Only support up to 12 keys");
