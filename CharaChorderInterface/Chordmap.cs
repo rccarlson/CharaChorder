@@ -124,6 +124,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		return actions.ToArray();
 	}
 
+	public static string ActionsToHexPhrase(IEnumerable<char> actions) => ActionsToHexPhrase(actions.Select(action => action.ToString()));
 	public static string ActionsToHexPhrase(IEnumerable<string> actions)
 	{
 #if DEBUG
@@ -143,6 +144,7 @@ public class Chordmap : IEquatable<Chordmap?>
 		return string.Join(string.Empty, actionIndices);
 	}
 
+	public static string ActionsToHexChord(IEnumerable<char> actions) => ActionsToHexChord(actions.Select(action => action.ToString()));
 	public static string ActionsToHexChord(IEnumerable<string> actions)
 	{
 		static string NormalizeHex(string hex, int targetLength) => hex.TrimStart('0').PadLeft(targetLength, '0');
