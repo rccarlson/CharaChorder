@@ -66,6 +66,7 @@ public class Chordmap : IEquatable<Chordmap?>
 			);
 	}
 
+	#region HEX/ACTION TRANSLATIONS
 	/// <summary> Gets the component actions from a given hex chord </summary>
 	public static string[] HexChordToActions(string hex)
 	{
@@ -164,7 +165,7 @@ public class Chordmap : IEquatable<Chordmap?>
 
 		return hexChord;
 	}
-
+	#endregion HEX/ACTION TRANSLATIONS
 
 	/// <summary>
 	/// Takes an ASCII
