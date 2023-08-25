@@ -387,7 +387,7 @@ public class CharaChorder : IDisposable
 	public void Send(string query) => _serialManager.Send(query);
 
 	private static readonly Regex queryResponseHeaderRegex = new(@"(?:(\d{2}) )?([A-Z]+.*)", RegexOptions.Compiled | RegexOptions.NonBacktracking);
-	private string? QueryWithEcho(string query)
+	public string? QueryWithEcho(string query)
 	{
 		var response = _serialManager.Query(query, @$"(?:([0-9+]+) )?({query}.*)", true);
 		if (response is null) return null;
