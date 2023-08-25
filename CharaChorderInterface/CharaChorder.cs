@@ -239,6 +239,7 @@ public class CharaChorder : IDisposable
 	/// </summary>
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialDebugging { get => GetBoolParameter("3"); set => SetBoolParameter("3", value); }
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialRaw { get => GetBoolParameter("4"); set => SetBoolParameter("4", value); }
+	/// <summary> CharaChorder device will write the chord hex into the log every time a chord is successfully performed </summary>
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialChord { get => GetBoolParameter("5"); set => SetBoolParameter("5", value); }
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialKeyboard { get => GetBoolParameter("6"); set => SetBoolParameter("6", value); }
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool EnableSerialMouse { get => GetBoolParameter("7"); set => SetBoolParameter("7", value); }
