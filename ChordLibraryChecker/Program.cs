@@ -116,12 +116,12 @@ internal class Program
 		Console.WriteLine();
 
 		Console.WriteLine("Chords to produce this output:");
-		var matchingPhrases = chords.Where(chord => chord?.AsciiPhrase == trimPrompt);
+		var matchingPhrases = chords.Where(chord => string.Equals(chord?.AsciiPhrase, trimPrompt, StringComparison.CurrentCultureIgnoreCase));
 		PrintChords(ConsoleColor.Black, ConsoleColor.White, matchingPhrases);
 		Console.WriteLine();
 
 		Console.WriteLine("Chords including this in output:");
-		var partialMatchPhrases = chords.Where(chord => chord?.AsciiPhrase?.Contains(trimPrompt) ?? false).Except(matchingPhrases);
+		var partialMatchPhrases = chords.Where(chord => chord?.AsciiPhrase?.Contains(trimPrompt, StringComparison.CurrentCultureIgnoreCase) ?? false).Except(matchingPhrases);
 		PrintChords(ConsoleColor.White, ConsoleColor.Black, partialMatchPhrases);
 		Console.WriteLine();
 
@@ -129,12 +129,12 @@ internal class Program
 		Console.WriteLine();
 
 		Console.WriteLine($"Chords using {componentCharsString}");
-		var matchingChords = chords.Where(chord => chord?.ChordActions.OrderDescending().SequenceEqual(componentChars) ?? false);
+		var matchingChords = chords.Where(chord => chord?.ChordActions.OrderDescending().SequenceEqual(componentChars, StringComparer.CurrentCultureIgnoreCase) ?? false);
 		PrintChords(ConsoleColor.Black, ConsoleColor.White, matchingChords);
 		Console.WriteLine();
 
 		Console.WriteLine($"Chords partly using {componentCharsString}");
-		var partialMatchChords = chords.Where(chord => chord.ChordActions.Intersect(componentChars).Count() == componentChars.Count()).Except(matchingChords);
+		var partialMatchChords = chords.Where(chord => chord?.ChordActions.Intersect(componentChars, StringComparer.CurrentCultureIgnoreCase).Count() == componentChars?.Count()).Except(matchingChords);
 		PrintChords(ConsoleColor.White, ConsoleColor.Black, partialMatchChords);
 		Console.WriteLine();
 
