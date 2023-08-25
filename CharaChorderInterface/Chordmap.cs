@@ -152,7 +152,7 @@ public class Chordmap : IEquatable<Chordmap?>
 			.Select(action => Array.IndexOf(Maps.ActionMap, action)) // get index of action
 			.OrderByDescending(idx => idx);
 
-		var chainIndex = 0; // left as a todo by Dot I/O
+		var chainIndex = 0; // It is used internally to store longer chord outputs. It isn’t really accessible via the serial api yet. - Matt Swarts, 8/25/23
 		var binChord = new StringBuilder()
 			.Append(NormalizeHex(NumberUtility.DecToBin(chainIndex), 8));
 
