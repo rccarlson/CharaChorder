@@ -12,7 +12,6 @@ namespace CharaChorderInterface;
 
 public class CharaChorder : IDisposable
 {
-	const int BaudRate = 115_200;
 	static readonly int[] VendorIDs = new int[] { 0x239A, 0x303A };
 	private Action<string>? _loggingAction = null;
 	public Action<string>? LoggingAction
