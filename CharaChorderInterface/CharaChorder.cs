@@ -4,7 +4,6 @@ using System.IO.Ports;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
-using CharaChorder.Utility;
 using CharaChorderInterface.Structs;
 using CharaChorderInterface.Utility;
 
