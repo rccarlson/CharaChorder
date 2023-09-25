@@ -217,9 +217,19 @@ public class CharaChorder : IDisposable
 			ResetType.ClearCml => "CLEARCML",
 			ResetType.UpgradeCml => "UPGRADECML",
 			ResetType.Func => "FUNC",
+			// Do not implement DUMPPAGE here, as it requires arguments. See DumpPage()
 			_ => throw new NotImplementedException(resetType.ToString())
 		};
 		_ = QueryWithEcho($"RST {subcommand}");
+	}
+
+	/// <summary> A debugging function that flushes portions of the device memory. This is not documented or supported. </summary>
+	/// <param name="page"> Page number </param>
+	public string? DumpPage(int page)
+	{
+		if (page < 0) throw new ArgumentOutOfRangeException(nameof(page));
+		var response = QueryWithEcho($"RST DUMPPAGE {page}");
+		return response?.Split(' ')[3];
 	}
 	#endregion RESET
 
