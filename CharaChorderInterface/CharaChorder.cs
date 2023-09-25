@@ -379,6 +379,19 @@ public class CharaChorder : IDisposable
 	}
 	#endregion RAM
 
+	/// <summary>
+	/// Provides a way to inject a chord or key states to be processed by the device. This is primarily used for debugging.
+	/// Returns the output phrase
+	/// </summary>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	public string? SimChord(string chordHex)
+	{
+		if (chordHex?.Length != 32) throw new ArgumentOutOfRangeException(nameof(chordHex), $"Length was {chordHex?.Length}. Expected 32");
+		var response = QueryWithEcho($"SIM CHORD {chordHex}");
+		var split = response?.Split(" ");
+		var generatedPhrase = split?[3];
+		return generatedPhrase;
+	}
 
 
 	#region SERIAL
