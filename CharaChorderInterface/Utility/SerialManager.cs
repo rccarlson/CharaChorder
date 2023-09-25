@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Ports;
 using System.Linq;
@@ -124,6 +125,7 @@ public class SerialManager : IDisposable
 			var str = built[..idx];
 			built = built[(idx + NewLine.Length)..];
 			//Console.WriteLine($"Completed line: {str}");
+			if (Debugger.IsAttached) Debugger.Log(0, "Serial", $"{DateTime.Now.ToString("HH:mm:ss:fff")} Received: {str}{Environment.NewLine}");
 			if (IsProcessingCommand)
 			{
 				_incomingSerialQueue.Enqueue(str);
@@ -145,6 +147,7 @@ public class SerialManager : IDisposable
 	{
 		lock (_serialLock)
 		{
+			if (Debugger.IsAttached) Debugger.Log(0, "Serial", $"{DateTime.Now.ToString("HH:mm:ss:fff")} Sending: {query}{Environment.NewLine}");
 			LoggingAction?.Invoke($"{DateTime.Now.ToString("HH:mm:ss:fff")} Sending: '{query}'... ");
 
 			var bytes = Encoding.UTF8.GetBytes(query + NewLine);
@@ -165,6 +168,8 @@ public class SerialManager : IDisposable
 			try
 			{
 				IsProcessingCommand = true;
+
+				if (Debugger.IsAttached) Debugger.Log(0, "Serial", $"{DateTime.Now.ToString("HH:mm:ss:fff")} Sending: {query}{Environment.NewLine}");
 
 				var bytes = Encoding.UTF8.GetBytes(query + "\r\n");
 				Port?.Write(bytes, 0, bytes.Length);
