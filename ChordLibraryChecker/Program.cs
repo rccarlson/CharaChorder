@@ -55,8 +55,8 @@ internal class Program
 		catch (UnauthorizedAccessException)
 		{
 			Console.Error.WriteLine("Unable to open connection to CharaChorder. Is the device open elsewhere?");
-			Thread.Sleep(5_000);
-			Environment.Exit(-1);
+			Thread.Sleep(3_000);
+			goto selectDevice;
 		}
 		if (device?.IsOpen != true)
 		{
