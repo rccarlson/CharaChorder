@@ -34,6 +34,7 @@ public class Chordmap : IEquatable<Chordmap?>
 
 	public static Chordmap FromHex(string hexChord, string hexPhrase) => new Chordmap(hexChord, hexPhrase);
 
+	public static Chordmap FromActions(IEnumerable<string> chordActions, string phraseAscii) => FromActions(chordActions, phraseAscii.Select(c => c.ToString()));
 	public static Chordmap FromActions(IEnumerable<string> chordActions, IEnumerable<string> phraseActions)
 		=> FromHex(
 			ActionsToHexChord(chordActions),
