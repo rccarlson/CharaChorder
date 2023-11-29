@@ -31,6 +31,11 @@ public class KeymapEntry
 
 public class Keymap
 {
+	public Keymap(KeymapEntry[] keymapEntries)
+	{
+		Entries = keymapEntries;
+	}
+
 	private static int GetMaxIndex(CharaChorder device) => device.DeviceModel switch
 	{
 		DeviceModel.One => 89,
@@ -49,11 +54,9 @@ public class Keymap
 
 	public static Keymap ReadFromDevice(CharaChorder charaChorder)
 	{
-		return new Keymap()
-		{
-			Entries = ReadKeymap(charaChorder).ToArray()
-		};
+		return new Keymap(ReadKeymap(charaChorder).ToArray());
 	}
+
 	public static Keymap ReadFromCSV(string filepath)
 	{
 		throw new NotImplementedException();
