@@ -49,6 +49,8 @@ public enum DeviceModel
 {
 	One,
 	Lite,
+	X,
+	Engine
 }
 
 public enum SerialResponseType

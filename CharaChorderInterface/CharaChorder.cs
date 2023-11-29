@@ -29,6 +29,8 @@ public class CharaChorder : IDisposable
 	{
 		"ONE" => DeviceModel.One,
 		"LITE" => DeviceModel.One,
+		"X" => DeviceModel.X,
+		"ENGINE" => DeviceModel.Engine,
 		_ => throw new NotSupportedException(DeviceID.Device),
 	};
 
