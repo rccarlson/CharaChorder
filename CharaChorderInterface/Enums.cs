@@ -26,6 +26,8 @@ public enum ResetType
 	UpgradeCml,
 	/// <summary> Adds back in functional chords such as CAPSLOCKS and Backspace-X chords. </summary>
 	Func,
+	/// <summary> As of v1.1.3, not fully implemented </summary>
+	Compound,
 }
 
 public enum OperatingSystem

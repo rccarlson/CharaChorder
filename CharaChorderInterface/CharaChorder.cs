@@ -219,6 +219,7 @@ public class CharaChorder : IDisposable
 			ResetType.ClearCml => "CLEARCML",
 			ResetType.UpgradeCml => "UPGRADECML",
 			ResetType.Func => "FUNC",
+			ResetType.Compound => "COMPOUND",
 			// Do not implement DUMPPAGE here, as it requires arguments. See DumpPage()
 			_ => throw new NotImplementedException(resetType.ToString())
 		};
