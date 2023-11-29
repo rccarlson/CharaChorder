@@ -14,10 +14,10 @@ internal class Program
 	static readonly string[] CharaChorderDeviceDescriptions = new[]
 	{
 		"CharaChorder 1", // CC1 v1.1.1
+		"TinyUSB CDC", // CCL and CCX v1.1.1
 		"CharaChorder One USB Serial", // CC1 v1.1.3
-		"TinyUSB CDC", // CCL v1.1.1
 		"CharaChorder Lite USB Serial", // CCL v1.1.3
-		"CharaChorder X USB Serial", // CCX
+		"CharaChorder X USB Serial", // CCX v1.1.3
 	};
 
 	static void Main(string[] args)
