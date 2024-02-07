@@ -148,7 +148,7 @@ public class CharaChorder : IDisposable
 		var response = QueryWithEcho($"CML C4 {hex}");
 		var split = response?.Split(" ");
 		var ok = split?[3];
-		if (ok != "2") throw new InvalidDataException($"Chord deletion failed. Code: {ok}"); // todo: this returned 2 on success. Change error case?
+		if (ok != "0") throw new InvalidDataException($"Chord deletion failed. Code: {ok}");
 	}
 
 	public Chordmap?[] ReadAllFromDevice(Action<int, int>? callback = null)
