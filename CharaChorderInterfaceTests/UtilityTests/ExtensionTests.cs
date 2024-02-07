@@ -58,4 +58,12 @@ public class ExtensionTests
 		Assert.That(new object?[] { "abc", 123, null, new object(), 123d, 123f }.WhereNotNull(), Is.Not.Contains(null));
 		Assert.That(new object?[] { null, null, null }.WhereNotNull(), Is.Not.Contains(null));
 	}
+
+	[TestCase(new int[] {1,2,3,4}, new int[] {4,3,2,1}, ExpectedResult = true)]
+	[TestCase(new int[] {1,2,3,4}, new int[] {4,3,2,1,0}, ExpectedResult = false)]
+	[TestCase(new int[] {1,2,3,4}, new int[] {4,3,2}, ExpectedResult = false)]
+	[TestCase(new int[] {1,2,3,4}, new int[] {1,2,3,4}, ExpectedResult = true)]
+	[TestCase(new int[] {1,2,3,4}, new int[] {1,3,2,4}, ExpectedResult = true)]
+	[TestCase(new int[] {1,2,3,4}, new int[] {1,3,2,4,4}, ExpectedResult = false)]
+	public bool SequenceUnorderedEqual(int[] expected, int[] actual) => expected.SequenceUnorderedEqual(actual);
 }
