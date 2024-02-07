@@ -172,9 +172,10 @@ internal class Program
 		const int MaxChoices = 8;
 		int selection = -1;
 
+		(string? PortName, string? Description)[] ports = Array.Empty<(string? PortName, string? Description)>();
 		while (selection == -1)
 		{
-			var ports = CharaChorder.GetSerialPorts();
+			ports = CharaChorder.GetSerialPorts();
 			var recognizedCCDevices = ports
 				.Where(port => CharaChorderDeviceDescriptions.Contains(port.Description))
 				.OrderBy(port => port.PortName)
@@ -206,7 +207,7 @@ internal class Program
 			int menuResultIndex = ConsoleMenu.Show("Choose your device:", menuChoices.Select(x => x.Item1).ToArray());
 			menuChoices[menuResultIndex].Item2.Invoke();
 		}
-		return default;
+		return ports[selection];
 
 		ConsoleKey GetNumberKey(int number)
 		{
