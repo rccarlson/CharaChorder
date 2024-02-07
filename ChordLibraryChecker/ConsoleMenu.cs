@@ -8,9 +8,9 @@ namespace ChordLibraryChecker;
 
 public record MenuChoice(string Content, ConsoleKey SelectionKey);
 
-public class ConsoleMenu
+public static class ConsoleMenu
 {
-	public static int Show(string prompt, params MenuChoice[] choices)
+	public static int Show(string prompt, MenuChoice[] choices)
 	{
 		Console.Clear();
 		Console.WriteLine(prompt);

@@ -20,6 +20,40 @@ internal class Program
 		"CharaChorder X USB Serial", // CCX v1.1.3
 	};
 
+	static Chordmap?[]? ReadAllChords(bool forceMenu)
+	{
+		var (serialPortName, serialPortDescription) = SelectDevice(forceMenu);
+		if (serialPortName == null) return null;
+		using var device = new CharaChorder(serialPortName);
+		try
+		{
+			device?.Open();
+		}
+		catch (UnauthorizedAccessException)
+		{
+			Console.Error.WriteLine("Unable to open connection to CharaChorder. Is the device open elsewhere?");
+			Thread.Sleep(3_000);
+			return null;
+		}
+		if (device?.IsOpen != true)
+		{
+			Console.Error.WriteLine("Unable to connect to device");
+			device?.Dispose();
+			return null;
+		}
+
+		device.EnableSerialDebugging = false;
+		device.EnableSerialLogging = false;
+		//var chords = device?.ReadAllFromDevice().Where(x => x is not null).Cast<Chordmap>();
+		var chordReadStart = DateTime.Now;
+		double GetRemainingSeconds(int total, int current) => (ETAEstimate(chordReadStart, DateTime.Now, 0, total, current) - DateTime.Now).TotalSeconds;
+		var chords = device
+			?.ReadAllFromDevice(
+				(total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%, {Math.Round(GetRemainingSeconds(total, current), 0)}s) ")
+			);
+		return chords;
+	}
+
 	static void Main(string[] args)
 	{
 		Console.Title = "Chord Library Checker";
@@ -45,36 +79,8 @@ internal class Program
 		Console.WriteLine(Disclaimer);
 		Console.WriteLine();
 		selectDevice:
-		var (serialPortName, serialPortDescription) = SelectDevice(args.Contains("--ForceMenu"));
+		var chords = ReadAllChords(args.Contains("--ForceMenu"));
 
-		var device = new CharaChorder(serialPortName ?? string.Empty);
-		try
-		{
-			device?.Open();
-		}
-		catch (UnauthorizedAccessException)
-		{
-			Console.Error.WriteLine("Unable to open connection to CharaChorder. Is the device open elsewhere?");
-			Thread.Sleep(3_000);
-			goto selectDevice;
-		}
-		if (device?.IsOpen != true)
-		{
-			Console.Error.WriteLine("Unable to connect to device");
-			device?.Dispose();
-			goto selectDevice;
-		}
-		device.EnableSerialDebugging = false;
-		device.EnableSerialLogging = false;
-
-		Action<int, int> fractionalCompletionAction = (total, current) => Console.Write($"\rReading chords from device ({current}/{total})");
-		Action<int, int> percentileCompletionAction = (total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%)");
-		var chordReadStart = DateTime.Now;
-		double GetRemainingSeconds(int total, int current) => (ETAEstimate(chordReadStart, DateTime.Now, 0, total, current) - DateTime.Now).TotalSeconds;
-		var chords = device.ReadAllFromDevice((total, current) => Console.Write($"\rReading chords from device ({Math.Round(100d * current / total, 0)}%, {Math.Round(GetRemainingSeconds(total, current), 0)}s) "));
-		var chordReadEnd = DateTime.Now;
-		device.Close();
-		device.Dispose();
 		Console.WriteLine();
 		var nullChords = chords.Where(c => c is null);
 		if (nullChords.Any())
@@ -87,7 +93,7 @@ internal class Program
 		Console.Clear();
 		Console.WriteLine(Disclaimer);
 		Console.WriteLine();
-		Console.WriteLine($"Loaded {chords.Length} chords from {serialPortDescription} in {Math.Round((chordReadEnd - chordReadStart).TotalSeconds, 1)} seconds");
+		Console.WriteLine($"Loaded {chords.Length} chords");
 		Console.WriteLine("!q to quit");
 		Console.WriteLine("!r to reload chords");
 		Console.WriteLine();
@@ -103,9 +109,6 @@ internal class Program
 		else if (trimPrompt == "!q") return; // quit
 		else if (trimPrompt == "!r") // reload chords
 		{
-			//if (device.IsOpen) goto loadChords;
-			//else goto selectDevice;
-			device?.Dispose();
 			goto selectDevice;
 		}
 
@@ -166,28 +169,44 @@ internal class Program
 
 	static (string? PortName, string? PortDescription) SelectDevice(bool forceDeviceMenu)
 	{
-		var ports = CharaChorder.GetSerialPorts();
-		var recognizedCCDevices = ports.Where(port => CharaChorderDeviceDescriptions.Contains(port.Description)).ToArray();
+		const int MaxChoices = 8;
+		int selection = -1;
 
-		if (recognizedCCDevices.Length == 1 && !forceDeviceMenu)
+		while (selection == -1)
 		{
-			return recognizedCCDevices.FirstOrDefault();
-		}
-		else
-		{
-			const int MaxChoices = 8;
-			var menuChoices = ports.Take(MaxChoices).Select((port, idx) =>
+			var ports = CharaChorder.GetSerialPorts();
+			var recognizedCCDevices = ports
+				.Where(port => CharaChorderDeviceDescriptions.Contains(port.Description))
+				.OrderBy(port => port.PortName)
+				.ToArray();
+
+			if (recognizedCCDevices.Length == 1 && !forceDeviceMenu)
+				return recognizedCCDevices.FirstOrDefault();
+
+			var choicesAndActions = ports?
+				.Take(MaxChoices)
+				.Select<(string? PortName, string? Description), (MenuChoice, Action)>((port, idx) =>
+				{
+					int oneIndexed = idx + 1;
+					ConsoleKey key = GetNumberKey(oneIndexed);
+					string display = $"{oneIndexed}) {port.PortName} - {port.Description}";
+					return (new MenuChoice(display, key), () => selection = idx);
+				})
+				.ToArray();
+
+			int optIdx = choicesAndActions.Length;
+			var additionalOptions = new (MenuChoice, Action)[]
 			{
-				int oneIndexed = idx + 1;
-				ConsoleKey key = GetNumberKey(oneIndexed);
-				string display = $"{oneIndexed}) {port.PortName} - {port.Description}";
-				return new MenuChoice(display, key);
-			}).ToArray();
-			var exitOption = new MenuChoice($"{menuChoices.Length + 1}) Exit", GetNumberKey(menuChoices.Length + 1));
-			var selection = ConsoleMenu.Show("Choose your device:", menuChoices.Append(exitOption).ToArray());
-			if (selection == menuChoices.Length) Environment.Exit(0);
-			return ports[selection];
+				(new MenuChoice($"{++optIdx}) Reload", GetNumberKey(optIdx)), () => { }),
+				(new MenuChoice($"{++optIdx}) Exit", GetNumberKey(optIdx)), () => Environment.Exit(0)),
+			};
+
+			var menuChoices = choicesAndActions.Concat(additionalOptions).ToArray();
+
+			int menuResultIndex = ConsoleMenu.Show("Choose your device:", menuChoices.Select(x => x.Item1).ToArray());
+			menuChoices[menuResultIndex].Item2.Invoke();
 		}
+		return default;
 
 		ConsoleKey GetNumberKey(int number)
 		{
